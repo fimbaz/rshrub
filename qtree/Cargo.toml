@@ -1,0 +1,8 @@
+[package]
+name = "qtree"
+version = "0.1.0"
+authors = ["Matthew Baker <fimbaz@gmail.com>"]
+
+[dependencies]
+ntree = { path = "/home/fimbaz/rust-n-tree/"}
+fe-rustty = { path = "/home/fimbaz/fe-rustty/" }
