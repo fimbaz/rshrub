@@ -74,11 +74,15 @@ impl <P: HasPos + PartialEq> QTree<P> {
         match parent.kind {
             Bucket { ref mut points, ref bucket_limit } => {
                 let index = if let Some((index,point)) = points.iter().enumerate().find(|x| *x.1 == point ){
-                    index
+                    Some(index)
                 }else{
-                    *bucket_limit as usize
+                    None
                 };
-                Some(points.swap_remove(index)) //all this so we can return the element we've removed.
+                if let Some(i) = index{
+                    Some(points.swap_remove(i)) //all this so we can return the element we've removed.
+                }else{
+                    None
+                }
             },            
             Branch { ref mut subregions, ref mut count } => {
                 let mut  search_result: Option<&mut NTree<Region,P>> = subregions.iter_mut().find(|b| b.region.contains(&point)); //invariants should let us unwrap this line later.
