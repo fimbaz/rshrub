@@ -36,7 +36,7 @@ pub struct Board {
 }
 impl Board{
     pub fn new(ground_level: u16) -> Board{
-        Board{ tree: QTree::new(Region::square(0,0,u16::max_value()),4),ground_level: ground_level}
+        Board{ tree: QTree::new(Region::square(0,0,16384),4),ground_level: ground_level}
     }
 }
 

@@ -1,0 +1,21 @@
+[package]
+name = "fe-rustty"
+version = "0.1.9"
+authors = ["Grant Mercer (gmercer015@gmail.com), Cole Reynolds <cpjreynolds@gmail.com>"]
+description = "rustty with widgets"
+documentation = "https://syntaf.github.io/fe-rustty"
+repository = "https://github.com/syntaf/fe-rustty"
+homepage = "https://github.com/syntaf/fe-rustty"
+readme = "README.md"
+license = "MIT"
+keywords = ["terminal", "ui", "tui", "console", "tty"]
+
+[dependencies]
+nix = "0.4"
+term = "0.2"
+lazy_static = "0.1"
+libc = "0.1"
+gag = "0.1.6"
+
+[lib]
+name = "rustty"
