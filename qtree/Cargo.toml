@@ -3,6 +3,17 @@ name = "qtree"
 version = "0.1.0"
 authors = ["Matthew Baker <fimbaz@gmail.com>"]
 
+[profile.test]
+opt-level = 3
+debug = true
+
+[profile.dev]
+debug = true
+
 [dependencies]
-ntree = { path = "/home/fimbaz/rust-n-tree/"}
-fe-rustty = { path = "/home/fimbaz/fe-rustty/" }
+rand = {version = "0.3.0"}
+ntree = { path = "/home/fimbaz/shrub2/rust-n-tree/"}
+fe-rustty = { path = "/home/fimbaz/shrub2/fe-rustty/" }
+
+[features]
+bench = []
