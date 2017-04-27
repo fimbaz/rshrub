@@ -17,7 +17,7 @@ impl From<Material> for Cell{
             Material::Ground() =>
                 Cell::new('.',Color::Default,Color::Default,Attr::Default)
                 ,
-            Material::Air() =>
+            Material::Air(f) =>
                 Cell::new(' ',Color::Default,Color::Default,Attr::Default)
                 ,
             Material::Water(f) =>
@@ -96,7 +96,7 @@ impl   WorldView {
             if frame_coords.1 >= frame_ground_level{
                 *cell=  Cell::from(Material::Ground())
             }else{
-                *cell= Cell::from(Material::Air())
+                *cell= Cell::from(Material::Air(1.0))
             }
         }
     }

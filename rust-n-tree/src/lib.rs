@@ -165,6 +165,10 @@ impl<P, R: Region<P>> NTree<R, P> {
         }
     }
 
+    pub fn neighbor_query_mut<'a>(&'a mut self) -> NeighborQueryMut<'a,R,P>{
+        return NeighborQueryMut { stack: vec![IndexedTree::new(self)],points: (&mut []).iter_mut() };
+    }
+
 }
 
 fn split_and_insert<P, R: Region<P>>(bucket: &mut NTree<R, P>, point: P) {
@@ -262,9 +266,96 @@ impl<'t, R: Region<P>, P> Iterator for RangeQuery<'t, R, P> {
         }
     }
 
-    
+                                                  
 }
 
+pub struct IndexedTree<'t,R: 't,P: 't>{
+    tree: &'t mut NTree<R,P>,
+    index: u8,
+}
+impl <'t,R: Region<P>,P> IndexedTree<'t,R,P>{
+    pub fn new(tree: &'t mut NTree<R,P> ) -> IndexedTree<'t,R,P>{
+        IndexedTree{tree:tree,index:0}
+    }
+                 
+}
+
+pub struct NeighborQueryMut<'t,R: 't,P: 't>{
+    pub stack: Vec<IndexedTree<'t,R,P>>,
+    pub points: slice::IterMut<'t, P>,    
+        
+}
+impl <'t, R: Region<P>,P>  NeighborQueryMut<'t, R,P>{
+    pub fn nexties<'b>(&'b mut self,region: R) -> Option<(&'b NTree<R,P>,R)>{
+        //return a unit rectangle that contains an active point, and a reference to the smallest subtree containing that point.
+        Some((self.stack.get(0).unwrap().tree,region))
+    }
+}
+/*
+impl<'t, R: Region<P>, P> Iterator for NeighborQueryMut<'t, R, P> {
+    type Item = &'t P;
+        fn next(&mut self) -> Option<&'t P> {
+        'outer: loop {
+            // try to find the next point in the region we're
+            // currently examining.
+            for p in &mut self.points {
+                if self.query.contains(p) {
+                    return Some(p)
+                }
+            }
+
+            // no relevant points, so lets find a new region.
+
+            'region_search: loop {
+                let mut children_iter = match self.stack.pop() {
+                    Some(x) => x,
+
+                    // no more regions, so we're over.
+                    None => return None,
+                };
+
+                'children: loop {
+                    // look at the next item in the current sequence
+                    // of children.
+                    match children_iter.next() {
+                        // this region is empty, next region!
+                        None => continue 'region_search,
+
+                        Some(value) => {
+                            if value.region.overlaps(&self.query) {
+                                // we always need to save this state, either we
+                                // recur into a new region, or we break out and
+                                // handle the points; either way, this is the
+                                // last we touch `children_iter` for a little
+                                // while.
+                                self.stack.push(children_iter);
+
+                                match value.kind {
+                                    Bucket { ref points, .. } => {
+                                        // found something with points
+                                        let tmp_points = points.iter();
+                                        for point in tmp_points{
+                                            assert_eq!(true,value.region.contains(&point));
+                                        }
+                                        self.points = points.iter();
+                                        self.perf_count = self.perf_count+1;
+                                        continue 'outer;
+                                    }
+                                    // step down into nested regions.
+                                    Branch { ref subregions, .. } => children_iter = subregions.iter()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+                                                  
+}
+*/
+                                 
 /*
 pub struct NeighborQueryMut<'t,R: 't,P: 't>{
     pub query:R,

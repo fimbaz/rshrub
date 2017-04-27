@@ -2,17 +2,20 @@ use std::iter;
 use tree::{Region,QTree,Pos,HasPos};
 use rustty::{Cell,Color,Attr};
 use std::slice;
+
 #[derive(Clone, Copy,Debug,PartialOrd,PartialEq)]
 pub enum Material {
     Water(f32),
     Ground(),
-    Air(),
+    Air(f32),
 }
+
 #[derive(Clone, Copy,Debug,PartialOrd)]
 pub struct Tile {
     pub pos: Pos,
     pub material: Material,
 }
+
 impl Tile{
     pub fn new(pos: &Pos,material: &Material) -> Tile{
         Tile { pos: pos.clone(),material: material.clone() }
@@ -43,6 +46,9 @@ pub struct Board {
 impl Board{
     pub fn new(ground_level: u16) -> Board{
         Board{ tree: QTree::new(Region::square(0,0,16384),4),ground_level: ground_level}
+    }
+    pub fn simulate_air(){
+        
     }
 }
 

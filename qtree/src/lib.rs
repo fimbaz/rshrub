@@ -106,8 +106,16 @@ mod tests {
     }
 */
     #[test]
-    fn test_search_region(){
-        test_full_region(&Region {x:0,y:0,width:5,height:5})
+    fn test_neighbor_query(){
+        let mut tree = QTree::new(Region::square(0,0,16384),4);
+        for i in 0..(100){
+            for j in 0..(100){
+	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+            }
+        }
+        let mut querymut = tree.tree.neighbor_query_mut();
+        let mut tree = querymut.nexties(Region::square(0,0,0));
+        {querymut.nexties(Region::square(0,0,0));}
     }
 
     #[test]
