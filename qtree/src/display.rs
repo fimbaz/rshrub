@@ -38,7 +38,7 @@ impl <'a>  WorldView<'a> {
         let frame_size = (frame.size().0 as u16,frame.size().1 as u16);
         if (Region {x:origin.x,y:origin.y,width:frame_size.0,height:frame_size.1}).contains(cursor){
             if cursor.x > origin.x + frame_size.0{
-                origin.x = cursor.x.saturating_sub(frame_size.0)
+                origin.x = cursor.x.saturating_sub(origin.x + frame_size.0)
             }else if cursor.x < origin.x {
                 origin.x = cursor.x
             }
@@ -59,6 +59,7 @@ impl <'a>  WorldView<'a> {
         let frame_size = frame.size();
         let region = Region::rectangle(origin.x,origin.y,frame_size.0 as u16,frame_size.1 as u16);
         let result = board.tree.tree.range_query(region);
+
         for tile in result {
             let pos = Pos {x:tile.pos.x - origin.x, y:tile.pos.y - origin.y};
             let index = frame.pos_to_index(pos.x as usize,pos.y as usize).clone();
@@ -67,7 +68,11 @@ impl <'a>  WorldView<'a> {
                 None => {/* println!("{:?}",pos)*/}
             }
         }
+        let cursor_index = if let Some(i) = frame.pos_to_index(cursor.x.saturating_sub(origin.x) as usize,cursor.y.saturating_sub(origin.y)as usize) {i} else { 0 } ;
+        frame.cellvec_mut().get_mut(cursor_index).unwrap().set_attrs(Attr::Reverse);
 
+
+        
     }
     pub fn set_cursor(&mut self,pos: &Pos) {
         self.cursor = *pos;
