@@ -35,15 +35,15 @@ impl <'a>  WorldView<'a> {
         WorldView::draw_world(self.board,&mut self.origin,&self.cursor,frame);
     }
     fn adjust_origin(board:&Board,origin: &mut Pos,cursor: &Pos,frame: &mut CellAccessor){
-        let frame_size = (frame.size().0 as u16,frame.size().1 as u16);
-        if (Region {x:origin.x,y:origin.y,width:frame_size.0,height:frame_size.1}).contains(cursor){
-            if cursor.x > origin.x + frame_size.0{
-                origin.x = cursor.x.saturating_sub(origin.x + frame_size.0)
+        let frame_size = (frame.size().0.saturating_sub(1) as u16,frame.size().1.saturating_sub(1) as u16);
+        if !(Region {x:origin.x,y:origin.y,width:frame_size.0,height:frame_size.1}).contains(cursor){
+            if cursor.x >= origin.x + frame_size.0{
+                origin.x = origin.x + cursor.x.saturating_sub(origin.x + frame_size.0);
             }else if cursor.x < origin.x {
                 origin.x = cursor.x
             }
             if cursor.y > origin.y + frame_size.1{
-                origin.y = cursor.y.saturating_sub(frame_size.1)
+                origin.y = origin.y + cursor.y.saturating_sub(origin.y + frame_size.1); 
             }else if cursor.y < origin.y{
                 origin.y = cursor.y
             }
