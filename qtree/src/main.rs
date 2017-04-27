@@ -39,13 +39,15 @@ fn main() {
     let mut term = Terminal::new().unwrap();
     let termsize = term.size();
 
-    let mut worldview = WorldView::new(&board,0,0);
+    let mut worldview = WorldView::new(0,0);
     'main: loop {
         while let Some(Event::Key(ch)) = term.get_event(10).unwrap() {
 
             match ch {
                 'q' => {break 'main},
+                'd' => {board.tree.delete(Tile::new(&worldview.cursor,&Material::Ground()));},
                 'k' => {worldview.cursor.y = worldview.cursor.y.checked_sub(1).unwrap_or(worldview.cursor.y)},
+
                 'h' => {worldview.cursor.x = worldview.cursor.x.checked_sub(1).unwrap_or(worldview.cursor.x)},
                 'l' => {worldview.cursor.x = worldview.cursor.x+1},
                 'j' => {worldview.cursor.y = worldview.cursor.y+1},
@@ -58,7 +60,7 @@ fn main() {
                 _ => continue,
             }
         }
-        worldview.draw(&mut term);
+        worldview.draw(&mut board,&mut term);
         term.swap_buffers().unwrap();
     }
 }

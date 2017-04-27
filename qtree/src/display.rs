@@ -6,8 +6,7 @@ use rustty::ui::core::{Widget,HorizontalAlign,VerticalAlign,Frame,Painter,Aligna
 use rustty::ui::{Canvas};
 use std::io::{self,Write};
 use std::process;
-pub struct WorldView<'a> {
-    board: &'a Board,
+pub struct WorldView {
     pub origin: Pos, // (x,y) in the UI -> (x+origin.x,y+origin.y) in the game world.
     pub  cursor: Pos, // position of cursor in the /world/ (that way we can take references to a size-changing terminal)
 }
@@ -27,12 +26,12 @@ impl From<Material> for Cell{
     }
 }
 
-impl <'a>  WorldView<'a> {
-     pub fn new(board: &'a Board,x: u16,y: u16) -> WorldView<'a> {
-     	 return WorldView { board: board, origin: Pos {x:x,y:y}, cursor: Pos {x:0,y:0}};
+impl   WorldView {
+     pub fn new(x: u16,y: u16) -> WorldView {
+     	 return WorldView { origin: Pos {x:x,y:y}, cursor: Pos {x:0,y:0}};
      }
-    pub fn draw(&mut self,frame:&mut CellAccessor){
-        WorldView::draw_world(self.board,&mut self.origin,&self.cursor,frame);
+    pub fn draw(&mut self,board: &Board,frame:&mut CellAccessor){
+        WorldView::draw_world(board,&mut self.origin,&self.cursor,frame);
     }
     fn adjust_origin(board:&Board,origin: &mut Pos,cursor: &Pos,frame: &mut CellAccessor){
         let frame_size = (frame.size().0.saturating_sub(1) as u16,frame.size().1.saturating_sub(1) as u16);

@@ -13,6 +13,12 @@ pub struct Tile {
     pub pos: Pos,
     pub material: Material,
 }
+impl Tile{
+    pub fn new(pos: &Pos,material: &Material) -> Tile{
+        Tile { pos: pos.clone(),material: material.clone() }
+    }
+                      
+}
 //this is too clever, but since I keep deleting it and rewriting it, here it stays.
 impl PartialEq for Tile {
     fn eq(&self,other:&Tile) -> bool {
