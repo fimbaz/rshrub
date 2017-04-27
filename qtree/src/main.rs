@@ -46,6 +46,7 @@ fn main() {
             match ch {
                 'q' => {break 'main},
                 'd' => {board.tree.delete(Tile::new(&worldview.cursor,&Material::Ground()));},
+                'i' => {board.tree.insert(Tile::new(&worldview.cursor,&Material::Ground()));},
                 'k' => {worldview.cursor.y = worldview.cursor.y.checked_sub(1).unwrap_or(worldview.cursor.y)},
 
                 'h' => {worldview.cursor.x = worldview.cursor.x.checked_sub(1).unwrap_or(worldview.cursor.x)},
