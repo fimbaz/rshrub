@@ -10,6 +10,8 @@ mod display;
 mod bench;
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "bench")]
+    use self::test::Bencher;
     use tree::{Pos,Region,QTree};
     use ntree::Region as NTRegion;
     use water::{Board,Tile,Material};
