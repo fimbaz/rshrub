@@ -8,7 +8,6 @@ use std::slice;
 pub struct QTree<P: HasPos>{
     pub tree: NTree<Region,P>
 }
-
 pub fn inner_delete<P: HasPos + PartialEq>(mut point: P,parent_branch:&mut Vec<NTree<Region,P>>) -> bool {
     match parent_branch.iter_mut().find(|b| b.region.contains(& point)) {
         Some(ref mut tree) => {
@@ -217,6 +216,20 @@ impl <T: HasPos> NTRegion<T> for Region {
                 (self.x+self.width >= other.x)   &&
                 (self.y <= other.y + other.height) &&
                 (self.y + self.height >= other.y)
+    }
+}   
+pub struct NeighborQuery<'t,P: 't>{
+    pub query: RangeQuery<'t,Region,P>,
+    pub points: Vec<&'t P>,    
+    
+}
+impl <'t,P: HasPos>  NeighborQuery<'t,P>{
+    pub fn nexties(&'t self) -> Option<RangeQuery<'t,Region,P>>{
+        let point = self.query.next().unwrap();
+        let pos = point.get_pos();
+        return self.tree.range_query(Region { x: pos.x.saturating_sub(1),y: pos.y.saturating_sub(1),height:2,width:2})
+        //return a unit rectangle that contains an active point, and a reference to the smallest subtree containing that point.
+            
     }
 }
 
