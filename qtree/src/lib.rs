@@ -105,38 +105,53 @@ mod tests {
         
         return true;
     }
-*/
-
-    #[cfg(feature = "bench")]
-    fn test_neighbor_query(b: &mut Bencher,tree: &QTree<Tile>) -> (usize,usize){
-        let mut inner_count = 0;
-        let mut count= 0;
-        let mut testcount = 0;
-        b.iter(|| {
-            count = 0;
-            inner_count=0;
-            for node_search in tree.neighbor_query(){
-                for mut neighbor in node_search{
-                    let mut neighbor_mat = neighbor.material.borrow_mut();
-                    *neighbor_mat = Material::Water(2.0);
-                    inner_count = inner_count+1;
-                }
-                count = count+1;
+     */
+    #[cfg(feature = "bench")]    
+    fn perform_neighbor_query(tree:&QTree<Tile>) -> (usize,usize){
+        let mut count = 0;
+        let mut inner_count=0;
+        for node_search in tree.neighbor_query(){
+            for mut neighbor in node_search{
+                let mut neighbor_mat = neighbor.material.borrow_mut();
+                *neighbor_mat = Material::Water(2.0);
+                inner_count = inner_count+1;
             }
-            testcount = testcount + 1;
-        });
+            count = count+1;
+        }
         (count,inner_count)
     }
 
-    #[cfg(feature = "bench")]
-    #[bench]
-    fn test_neighbor_query_small(b: &mut Bencher){
-        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},50,50)));
+    fn test_neighbor_query(b: &mut Bencher,tree: &QTree<Tile>){
+        println!("{:?}",perform_neighbor_query(tree));
+        println!("{:?}",b.iter(||perform_neighbor_query(tree)));
+
     }
     #[cfg(feature = "bench")]
     #[bench]
-    fn test_neighbor_query_medium(b: &mut Bencher){
-        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},20,20)));
+    fn test_create_region(b: &mut Bencher){
+        b.iter(||create_holey_region(&Region{x:0,y:0,width:1000,height:1000},50,50));
+    }
+
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_denser(b: &mut Bencher){
+        test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},50,50));
+    }
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_sparse(b: &mut Bencher){
+        test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},500,500));
+    }
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_sparsest(b: &mut Bencher){
+          test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},200,2000));
+    }
+
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_even_denser(b: &mut Bencher){
+        test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},20,20));
     }
 
     #[test]
