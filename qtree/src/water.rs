@@ -2,7 +2,7 @@ use std::iter;
 use tree::{Region,QTree,Pos,HasPos};
 use rustty::{Cell,Color,Attr};
 use std::slice;
-
+use std::cell::RefCell;
 #[derive(Clone, Copy,Debug,PartialOrd,PartialEq)]
 pub enum Material {
     Water(f32),
@@ -10,15 +10,15 @@ pub enum Material {
     Air(f32),
 }
 
-#[derive(Clone, Copy,Debug,PartialOrd)]
+#[derive(Debug,PartialOrd)]
 pub struct Tile {
     pub pos: Pos,
-    pub material: Material,
+    pub material: RefCell<Material>,
 }
 
 impl Tile{
     pub fn new(pos: &Pos,material: &Material) -> Tile{
-        Tile { pos: pos.clone(),material: material.clone() }
+        Tile { pos: pos.clone(),material: RefCell::new(material.clone()) }
     }
                       
 }

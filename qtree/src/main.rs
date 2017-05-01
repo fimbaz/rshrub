@@ -22,7 +22,7 @@ fn main() {
 //    board.tree.tree.insert(Tile { material: Material::Ground(), pos: Pos {x: 80, y:15}});
     for i in 0..20{
         for j in 0..20{
-            board.tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+            board.tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
         }
     }
 //    board.tree.delete(Tile { material: Material::Ground(), pos: Pos {x: 5, y:5}});

@@ -12,7 +12,7 @@ mod bench;
 mod tests {
     #[cfg(feature = "bench")]
     use self::test::Bencher;
-
+    use core::borrow::BorrowMut;
     use tree::{Pos,Region,QTree};
     use ntree::Region as NTRegion;
     use water::{Board,Tile,Material};
@@ -34,7 +34,7 @@ mod tests {
         let mut tree = QTree::new(Region::square(0,0,16384),4);
         for i in 0..(region.x+region.width+5){
             for j in 0..(region.y+region.height+5){
-	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+	    	tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
             }
         }
 	let rq = tree.tree.range_query(region.clone());
@@ -56,14 +56,14 @@ mod tests {
         let mut tree = QTree::new(Region::square(0,0,16384),4);
         for i in 0..100{
             for j in 0..100{
-	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+	    	tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
             }
         }
 
         
         for i in 0..47{
             for j in 0..47{
-                tree.delete(Tile{pos: Pos {x: i, y: j},material: Material::Ground()});
+                tree.delete(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
             }
         }
 
@@ -116,8 +116,9 @@ mod tests {
             count = 0;
             inner_count=0;
             for node_search in tree.neighbor_query(){
-                for neighbor in node_search{
-                    test::black_box(neighbor);
+                for mut neighbor in node_search{
+                    let mut neighbor_mat = neighbor.material.borrow_mut();
+                    *neighbor_mat = Material::Water(2.0);
                     inner_count = inner_count+1;
                 }
                 count = count+1;
@@ -136,7 +137,7 @@ mod tests {
         let mut board = Board::new(30);        
         for i in 0..1000{
             for j in 0..1000{
-                board.tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+                board.tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
 		
             }
         }
@@ -181,7 +182,7 @@ mod tests {
         let mut board = Board::new(30);        
         for i in 0..20{
             for j in 0..20{
-                board.tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+                board.tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
 		
             }
         }
@@ -227,7 +228,7 @@ mod tests {
         let mut tree = QTree::new(Region::square(0,0,16384),4);
         for i in 0..(region.x+region.width+5){
             for j in 0..(region.y+region.height+5){
-	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+	    	tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
             }
         }
 	{let rq = tree.tree.range_query(region.clone());
@@ -240,7 +241,7 @@ mod tests {
         for i in 0..(region.x+region.width+5){
             for j in 0..(region.y+region.height+5){
                 if i % iskip == 0 || j % jskip == 1{
-	    	    tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+	    	    tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
                 }
             }
         }
@@ -281,14 +282,14 @@ mod tests {
         let mut tree = create_full_region(&Region {x:0,y:0,width:50,height:50});        
         raster_tree(b,&mut tree,30);
     }
-
+/*
     #[cfg(feature = "bench")]
     #[bench]
     fn raster_tree_huge(b: &mut Bencher){
         let mut tree = create_holey_region(&Region {x:0,y:0,width:1000,height:1000},10,10);        
         raster_tree(b,&mut tree,1000);
     }
-
+*/
     #[cfg(feature = "bench")]
     #[bench]
     fn big_world_one_query(b: &mut Bencher){
@@ -309,7 +310,7 @@ mod tests {
         let mut tree = QTree::new(Region::square(0,0,16384),4);
         for i in 0..1000{
             for j in 0..1000{
-	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+	    	tree.tree.insert(Tile::new(&Pos{x: j,y: i},&Material::Water(1.0)));
             }
         }
         let mut rquery = tree.tree.range_query(Region{x:20,y:20,width:0,height:0});

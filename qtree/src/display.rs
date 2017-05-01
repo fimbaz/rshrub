@@ -63,10 +63,11 @@ impl   WorldView {
             let pos = Pos {x:tile.pos.x - origin.x, y:tile.pos.y - origin.y};
             let index = frame.pos_to_index(pos.x as usize,pos.y as usize).clone();
             match index {
-                Some(i) =>{frame.cellvec_mut()[i] = Cell::from(tile.material)},
+                Some(i) =>{frame.cellvec_mut()[i] = Cell::from(*tile.material.borrow())},
                 None => {/* println!("{:?}",pos)*/}
             }
         }
+
         let cursor_index = if let Some(i) = frame.pos_to_index(cursor.x.saturating_sub(origin.x) as usize,cursor.y.saturating_sub(origin.y)as usize) {i} else { 0 } ;
         frame.cellvec_mut().get_mut(cursor_index).unwrap().set_attrs(Attr::Reverse);
 
