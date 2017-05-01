@@ -3,6 +3,7 @@ use std::mem;
 use std::slice;
 use ref_slice::ref_slice;
 use self::Kind::{Branch,Bucket};
+use std::vec::IntoIter;
 #[derive(Debug)]
 pub struct Tree<P>{
     pub region: Region,
@@ -87,4 +88,44 @@ pub struct RangeQuery<'t,P: 't> {
     pub stack: Vec<slice::Iter<'t, Tree<P>>>,
 }
 
+impl<'t,P: HasPos> Iterator for RangeQuery<'t,P> {
+	 type Item = &'t P;
+	 fn next(&mut self) -> Option<&'t P> {
+	    'outer: loop {
+	    	    for p in &mut self.points {
+		    	if self.query.contains(p){
+			   return Some(p)
+			}
+		    }
+		    'region_search: loop {
+		           let mut children_iter = match self.stack.pop() {
+			       Some(x) => x,
+			       None => return None,
+		           };
+			   'children: loop {
+			       match children_iter.next() {
+			       	     None => continue 'region_search,
+				     Some(value) => {
+				          if value.region.overlaps(self.query) {
+					     self.stack.push(children_iter);
+					     match value.kind{
+					         Bucket { ref points, .. } => {
+						     self.points = points.iter();
+						     continue 'outer;
+						 }
+						 Branch { ref subregions, .. } => children_iter = subregions.iter()
+					     }
+					  }
+				     }
+			       }
+			   }
+		    }
+	    }
+	}
+}
+
+
+	    
+	 
+	 
 
