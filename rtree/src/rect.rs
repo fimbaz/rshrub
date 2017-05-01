@@ -1,4 +1,4 @@
-pub const MAX_RECT_SIZE: usize = 2147483647;
+pub const MAX_RECT_SIZE: usize = 16384;
 #[derive(Clone,Copy, Debug, PartialEq)]
 pub struct Region {
     pub x: usize,

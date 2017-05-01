@@ -38,6 +38,8 @@ impl <P: HasPos> Tree<P> {
             region: region
         }
     }
+
+    
     pub fn insert(&mut self,point: P) -> bool{
         if !self.region.contains(&point) {return false}
         match self.kind {
@@ -57,7 +59,6 @@ impl <P: HasPos> Tree<P> {
         split_and_insert(self,point);
         true
     }
-
     pub fn range_query<'t>(&'t self, query: &'t Region) -> RangeQuery<'t,P> {
         RangeQuery {
             query: query,
@@ -80,6 +81,7 @@ fn split_and_insert<P: HasPos>(bucket: &mut Tree<P>,point: P){
     for old_point in old_points.into_iter() {
         bucket.insert(old_point);
     }
+    bucket.insert(point);
 }
 
 pub struct RangeQuery<'t,P: 't> {
@@ -89,43 +91,43 @@ pub struct RangeQuery<'t,P: 't> {
 }
 
 impl<'t,P: HasPos> Iterator for RangeQuery<'t,P> {
-	 type Item = &'t P;
-	 fn next(&mut self) -> Option<&'t P> {
-	    'outer: loop {
-	    	    for p in &mut self.points {
-		    	if self.query.contains(p){
-			   return Some(p)
+    type Item = &'t P;
+    fn next(&mut self) -> Option<&'t P> {
+	'outer: loop {
+	    for p in &mut self.points {
+		if self.query.contains(p){
+		    return Some(p)
+		}
+	    }
+	    'region_search: loop {
+		let mut children_iter = match self.stack.pop() {
+		    Some(x) => x,
+		    None => return None,
+		};
+		'children: loop {
+		    match children_iter.next() {
+			None => continue 'region_search,
+			Some(value) => {
+			    if value.region.overlaps(self.query) {
+				self.stack.push(children_iter);
+				match value.kind{
+				    Bucket { ref points, .. } => {
+					self.points = points.iter();
+					continue 'outer;
+				    }
+				    Branch { ref subregions, .. } => children_iter = subregions.iter()
+				}
+			    }
 			}
 		    }
-		    'region_search: loop {
-		           let mut children_iter = match self.stack.pop() {
-			       Some(x) => x,
-			       None => return None,
-		           };
-			   'children: loop {
-			       match children_iter.next() {
-			       	     None => continue 'region_search,
-				     Some(value) => {
-				          if value.region.overlaps(self.query) {
-					     self.stack.push(children_iter);
-					     match value.kind{
-					         Bucket { ref points, .. } => {
-						     self.points = points.iter();
-						     continue 'outer;
-						 }
-						 Branch { ref subregions, .. } => children_iter = subregions.iter()
-					     }
-					  }
-				     }
-			       }
-			   }
-		    }
+		}
 	    }
 	}
+    }
 }
 
 
-	    
-	 
-	 
+
+
+
 

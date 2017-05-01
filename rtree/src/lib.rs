@@ -6,7 +6,7 @@ mod tree;
 mod tests {
     extern crate test;
     use rect::{Pos,Region,MAX_RECT_SIZE};
-    use tree::Tree;
+    use tree::{Tree,RangeQuery};
     #[cfg(feature = "bench")]
     use self::test::Bencher;
 
@@ -30,29 +30,42 @@ mod tests {
         let p=Pos{x:3,y:2};
         
     }
+
     
     #[test]
     fn test_create(){
-        let a=Region{x:0,y:0,width:MAX_RECT_SIZE,height:MAX_RECT_SIZE};
+        let a=Region{x:0,y:0,width:16384,height:16384};
         let mut tree: Tree<Pos> = Tree::new(a);
         for i in 0..100{
             for j in 0..100{
-	    	tree.insert(Pos{x:i,y:j});
+	        tree.insert(Pos{x:i,y:j});
             }
         }
 
         
     }
-    #[test]
-    fn test_rq(){
+
+    #[cfg(feature="bench")]
+    #[bench]
+    fn test_rq_10000(b: &mut Bencher){
         let a=Region{x:0,y:0,width:MAX_RECT_SIZE,height:MAX_RECT_SIZE};
         let mut tree: Tree<Pos> = Tree::new(a);
         for i in 0..100{
             for j in 0..100{
-	    	tree.insert(Pos{x:i,y:j});
+	        tree.insert(Pos{x:i,y:j});
             }
         }
+        let mut clj = || {
+            let mut count=0;
+            for pos in tree.range_query(&Region{x:0,y:0,width:100,height:100}){
+                count = count+1;
+                test::black_box(pos);
+            }
+            count
+        };
 
+        println!("{:?}",clj());
+        b.iter(clj);
         
     }
 
