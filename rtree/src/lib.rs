@@ -41,6 +41,7 @@ mod tests {
 	        tree.insert(Pos{x:i,y:j});
             }
         }
+        assert_eq!(tree.range_query(&a).fold(0,|i,x|i+1),10000);
 
         
     }
