@@ -1,0 +1,11 @@
+
+running 6 tests
+test tests::create_rect ... ignored
+test tests::it_works ... ignored
+test tests::test_contains ... ignored
+test tests::test_create ... ignored
+test tests::test_overlaps ... ignored
+test tests::create_region_10000 ... bench:   7,035,406 ns/iter (+/- 4,144,464)
+
+test result: ok. 0 passed; 0 failed; 5 ignored; 1 measured
+
