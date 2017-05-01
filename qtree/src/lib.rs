@@ -12,6 +12,7 @@ mod bench;
 mod tests {
     #[cfg(feature = "bench")]
     use self::test::Bencher;
+
     use tree::{Pos,Region,QTree};
     use ntree::Region as NTRegion;
     use water::{Board,Tile,Material};
@@ -24,8 +25,6 @@ mod tests {
     extern crate rand;
     #[cfg(feature = "bench")]
     extern crate test;
-    #[cfg(feature = "bench")]
-    use self::test::Bencher;
     #[cfg(feature = "bench")]
 
     use std::mem::replace;
@@ -107,17 +106,29 @@ mod tests {
         return true;
     }
 */
-    #[test]
-    fn test_neighbor_query(){
-        let mut tree = QTree::new(Region::square(0,0,16384),4);
-        for i in 0..(100){
-            for j in 0..(100){
-	    	tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
+
+    #[cfg(feature = "bench")]
+    fn test_neighbor_query(b: &mut Bencher,tree: &QTree<Tile>){
+        let mut inner_count = 0;
+        let mut count= 0;
+        let mut testcount = 0;
+        b.iter(|| {
+            count = 0;
+            inner_count=0;
+            for node_search in tree.neighbor_query(){
+                for neighbor in node_search{
+                    test::black_box(neighbor);
+                    inner_count = inner_count+1;
+                }
+                count = count+1;
             }
-        }
-        let mut querymut = tree.tree.neighbor_query_mut();
-        let mut tree = querymut.nexties(Region::square(0,0,0));
-        {querymut.nexties(Region::square(0,0,0));}
+            testcount = testcount + 1;
+        });
+    }
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_small(b: &mut Bencher){
+        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},10,10)));
     }
 
     #[test]
@@ -224,11 +235,11 @@ mod tests {
         return tree;
     }
     #[cfg(feature = "bench")]
-    fn create_holey_region(region: &Region) -> QTree<Tile>{
+    fn create_holey_region(region: &Region,iskip: u16,jskip: u16) -> QTree<Tile>{
         let mut tree = QTree::new(Region::square(0,0,16384),4);
         for i in 0..(region.x+region.width+5){
             for j in 0..(region.y+region.height+5){
-                if i % 10 != 0 || j %10 == 1{
+                if i % iskip == 0 || j % jskip == 1{
 	    	    tree.tree.insert(Tile{material: Material::Water(1.0),pos:Pos{x: j,y: i}});
                 }
             }
@@ -274,7 +285,7 @@ mod tests {
     #[cfg(feature = "bench")]
     #[bench]
     fn raster_tree_huge(b: &mut Bencher){
-        let mut tree = create_full_region(&Region {x:0,y:0,width:1000,height:1000});        
+        let mut tree = create_holey_region(&Region {x:0,y:0,width:1000,height:1000},10,10);        
         raster_tree(b,&mut tree,1000);
     }
 
@@ -288,7 +299,7 @@ mod tests {
     #[cfg(feature = "bench")]
     #[bench]
     fn big_holey_world_one_query(b: &mut Bencher){
-        let mut tree = create_holey_region(&Region {x:0,y:0,width:1000,height:1000});        
+        let mut tree = create_holey_region(&Region {x:0,y:0,width:1000,height:1000},10,10);        
         raster_tree(b,&mut tree,1);
     }
 
@@ -304,7 +315,6 @@ mod tests {
         let mut rquery = tree.tree.range_query(Region{x:20,y:20,width:0,height:0});
 
         rquery.next();
-//        println!("{:?}",rquery.next());
     }
     
 }

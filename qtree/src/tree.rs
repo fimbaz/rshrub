@@ -43,6 +43,10 @@ pub fn inner_delete<P: HasPos + PartialEq>(mut point: P,parent_branch:&mut Vec<N
 
     
 impl <P: HasPos + PartialEq> QTree<P> {
+    pub fn neighbor_query(& self) -> NeighborQuery<P>{
+        NeighborQuery { tree: self,query: self.tree.range_query(Region{x:1, y:1,height:16384,width: 16384})}
+    }
+
     pub fn new(region: Region, size: u8) -> QTree<P> {
         return QTree {tree:NTree::new(region,size)};
     }
@@ -217,104 +221,23 @@ impl <T: HasPos> NTRegion<T> for Region {
                 (self.y <= other.y + other.height) &&
                 (self.y + self.height >= other.y)
     }
-}   
-pub struct NeighborQuery<'t,P: 't>{
+}
+pub struct NeighborQuery<'t,P:'t + HasPos + PartialEq>{
+    pub tree: &'t QTree<P>,
     pub query: RangeQuery<'t,Region,P>,
-    pub points: Vec<&'t P>,    
-    
 }
-impl <'t,P: HasPos>  NeighborQuery<'t,P>{
-    pub fn nexties(&'t self) -> Option<RangeQuery<'t,Region,P>>{
-        let point = self.query.next().unwrap();
-        let pos = point.get_pos();
-        return self.tree.range_query(Region { x: pos.x.saturating_sub(1),y: pos.y.saturating_sub(1),height:2,width:2})
+
+impl <'t,P: HasPos + PartialEq>  Iterator for NeighborQuery<'t,P>{
+    type Item = RangeQuery<'t,Region,P>;
+     fn next(&mut self) -> Option<RangeQuery<'t,Region,P>>{
+         if let Some(point) =  self.query.next(){
+             let pos = point.get_pos();
+             return Some(self.tree.range_query(Region { x: pos.x.saturating_sub(1),y: pos.y.saturating_sub(1),height:2,width:2}));
+         }else{
+             None
+         }
+                                  
         //return a unit rectangle that contains an active point, and a reference to the smallest subtree containing that point.
-            
     }
 }
 
-/*
-
-
-    fn contains_fast(r:&Region,p:&Pos) -> bool {
-        r.x <  p.x && r.y <  p.y && (r.x + r.width) >=p.x && (r.y + r.height) >=p.y
-    }
-    
-    fn contains_region_fast(own: &Region,other: &Region) -> bool{
-        contains_fast(own,& Pos { x: other.x, y: other.y })
-            || contains_fast(own,& Pos { x: other.x + other.width, y: other.y })
-            || contains_fast(own,& Pos { x: other.x, y: other.y + other.height })
-            || contains_fast(own,& Pos { x: other.x + other.width, y: other.y + other.height })
-            
-    }
-*/
-
-
-    /*
-pub struct NeighborQuery<'a>{
-    rangequery: RangeQueryMut<'a,Region,Tile>,
-    points: Vec<&'a mut T>
-}
-
-impl NeighborQuery<'a>{
-    fn new(tree: &mut 'a QTree<T>){
-        return NeighborQuery { rangequery: rangequery,
-    }
-    fn next(&'a mut self) -> &Vec<&'a mut T> {
-        
-    }
-}
-*/
-
-/*
-impl <'a,'b,T: HasPos,T2: HasPos> NeighborQuery<'a,'b,T,T2> {
-    pub fn new(tree: &QTree<T>) -> NeighborQuery<T,T2>{
-        return NeighborQuery { tree: tree, pos: Pos {x:0,y:0},neighborhood: None};
-    }
-}
-impl <'a,'b,T: HasPos,T2: HasPos> NeighborQuery<'a,'b,T,T2> {
-    fn next(&'a mut self) -> Vec<&'a T>{
-        let ref region = Region::square(self.pos.x-1,self.pos.y-1,3);
-        return self.tree.tree.range_query(region).collect()
-    }
-}
-*/
-/*
-pub struct NeighborQuery<'a> {
-    pos: Pos,
-    tree: &'a mut QTree<Tile>,
-//    rangequery: RangeQueryMut<'a,Region,Tile>
-        
-       
-}
-impl<'a> QTree<Tile> {
-    fn neighbor_query_mut(&'a mut self,range: Region) -> NeighborQuery<'a> {
-       // let rangequery = self.tree.range_query_mut(range);
-        NeighborQuery {
-            tree: &mut self,
-//            rangequery: rangequery,
-            pos: Pos {x: 0, y:0},
-        }
-    }
-}
-
-impl <'a> NeighborQuery<'a> {
-    fn next(&'a mut self) -> Option<Vec<&'a mut Tile>> {
-        let square = Region::square(self.pos.x-1,self.pos.y-1,3);
-//        self.rangequery = self.tree.range_query_mut(square);
-        
-        None
-	
-
-	//This is meant to drive our main loop. 
-        //Neighborquery shall hold, on each iteration, a vector of mutable references to the active neighbors of the element at Pos ..
-        //(we won't need a Neighborhood enum ultimately, because Tiles hold their own position.
-        //the 'calling' cell can infer which neighbors are active and which are STP air/ground
-        //so long as the list of active neighbors is exhaustive.  We can do the confusing graph stuff in here, then make it pretty in another func.. just satify the constraint.
-        //The slow way is to do a RangeQuery for each iteration.  The fast way is to thumb through the stack, and keep local refs around between iters-- hence the short 'b lifetime of those innermost refs])
-        }
-}
-
-
-
-*/
