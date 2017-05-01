@@ -108,7 +108,7 @@ mod tests {
 */
 
     #[cfg(feature = "bench")]
-    fn test_neighbor_query(b: &mut Bencher,tree: &QTree<Tile>){
+    fn test_neighbor_query(b: &mut Bencher,tree: &QTree<Tile>) -> (usize,usize){
         let mut inner_count = 0;
         let mut count= 0;
         let mut testcount = 0;
@@ -125,11 +125,18 @@ mod tests {
             }
             testcount = testcount + 1;
         });
+        (count,inner_count)
     }
+
     #[cfg(feature = "bench")]
     #[bench]
     fn test_neighbor_query_small(b: &mut Bencher){
-        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},10,10)));
+        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},50,50)));
+    }
+    #[cfg(feature = "bench")]
+    #[bench]
+    fn test_neighbor_query_medium(b: &mut Bencher){
+        println!("{:?}",test_neighbor_query(b,&create_holey_region(&Region{x:0,y:0,width:1000,height:1000},20,20)));
     }
 
     #[test]
