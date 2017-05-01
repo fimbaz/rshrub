@@ -3,6 +3,9 @@ name = "qtree"
 version = "0.1.0"
 authors = ["Matthew Baker <fimbaz@gmail.com>"]
 
+[profile.release]
+debug = true
+
 [profile.test]
 opt-level = 3
 debug = true
