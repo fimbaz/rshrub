@@ -41,8 +41,8 @@ impl  From<Pos> for BucketPos {
                            
 impl Hash for BucketPos {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        println!("{:?}",(self.0.x/RECT_BUCKET_SIZE) as u32);
-        println!("{:?}",(self.0.y/RECT_BUCKET_SIZE) as u32);
+//        println!("{:?}",(self.0.x/RECT_BUCKET_SIZE) as u32);
+//        println!("{:?}",(self.0.y/RECT_BUCKET_SIZE) as u32);
         state.write_u32((self.0.x/RECT_BUCKET_SIZE) as u32);
         state.write_u32((self.0.y/RECT_BUCKET_SIZE) as u32);
         state.finish();
@@ -72,6 +72,10 @@ impl BucketPos {
      pub fn new(x: usize,y:usize) -> BucketPos{
      	 BucketPos(Pos{x: x,y: y})
      }
+}
+
+trait <P> RangeQuery {
+    
 }
 
 impl Region{
