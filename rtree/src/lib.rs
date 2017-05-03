@@ -56,8 +56,9 @@ mod tests {
     #[cfg(feature="bench")]
     #[bench]
     fn bench_nq(b: &mut Bencher){
+        let region_size = 1000;
         let a= Region{x:0,y:0,width:16384,height:16384};
-        let mut tree: Tree<Pos> = create_full_region(100,100);
+        let mut tree: Tree<Pos> = create_full_region(region_size,region_size);
 	let clj =||{
             let mut ncount = 0;
             let mut count = 0;
@@ -78,15 +79,15 @@ mod tests {
 
                 let mut ided_point = false;
                 if ((point.x == 0 && point.y ==0 ) ||
-                                   (point.x == 0 && point.y == 99 ) ||
-                                   (point.x==99 && point.y == 0) ||
-                                    (point.y==99 && point.x == 99)){
+                                   (point.x == 0 && point.y == region_size-1 ) ||
+                                   (point.x==region_size-1 && point.y == 0) ||
+                                    (point.y==region_size-1 && point.x == region_size-1)){
                     ided_point = true;
                     if local_n != 4{
                         println!("{:?},{:?}",point,local_n);
                     }
                 }
-                if ((point.x == 0 || point.x == 99) || (point.y == 0 || point.y == 99)) && !ided_point{
+                if ((point.x == 0 || point.x == region_size-1) || (point.y == 0 || point.y == region_size-1)) && !ided_point{
                     if local_n != 6{
                         println!("{:?},{:?}",point,local_n);
                     }
