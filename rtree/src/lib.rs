@@ -31,16 +31,26 @@ mod tests {
         
     }
 
-    
+    fn create_full_region(i: usize,j: usize) -> Tree<Pos>{
+        let a=Region{x:0,y:0,width:16384,height:16384};
+        let mut tree = Tree::new(a);
+        for x in (0..i){
+            for y in (0..j){
+                tree.insert(Pos{x:x,y:y});
+            }
+        }
+        return tree;
+    }
+
+    #[test]
+    fn test_create_region(){
+        let tree =create_full_region(100,100);
+        assert_eq!(10000,tree.range_query(&tree.region).fold(0,|i,x|i+1));
+    }
     #[test]
     fn test_create(){
         let a=Region{x:0,y:0,width:16384,height:16384};
-        let mut tree: Tree<Pos> = Tree::new(a);
-        for i in 0..100{
-            for j in 0..100{
-	        tree.insert(Pos{x:i,y:j});
-            }
-        }
+        let mut tree: Tree<Pos> = create_full_region(100,100);
         assert_eq!(tree.range_query(&a).fold(0,|i,x|i+1),10000);
 
         
