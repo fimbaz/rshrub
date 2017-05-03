@@ -24,7 +24,7 @@ impl HasPos for Pos {
     }
 }
 #[derive(Clone,Copy,Debug)]
-pub struct BucketPos(Pos);
+pub struct BucketPos(pub Pos);
 impl HasPos for BucketPos {
     fn get_pos(&self) -> Pos {
         return self.0;
@@ -37,8 +37,7 @@ impl  From<Pos> for BucketPos {
         return BucketPos(pos.clone());
     }
 }
-                              
-                           
+
 impl Hash for BucketPos {
     fn hash<H: Hasher>(&self, state: &mut H) {
 //        println!("{:?}",(self.0.x/RECT_BUCKET_SIZE) as u32);
@@ -74,9 +73,6 @@ impl BucketPos {
      }
 }
 
-trait <P> RangeQuery {
-    
-}
 
 impl Region{
     pub fn square(x: usize, y:usize, wh: usize) -> Region {
