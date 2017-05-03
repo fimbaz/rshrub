@@ -70,9 +70,33 @@ mod tests {
                 if point.y == 0 {
                     hood.height = 1;
                 }
+                let mut local_n = 0;
 	        for neighbor in tree.range_query(&hood){
-	    	    ncount = ncount +1;
+                    local_n +=1
 	        }
+                ncount += local_n;
+
+                let mut ided_point = false;
+                if ((point.x == 0 && point.y ==0 ) ||
+                                   (point.x == 0 && point.y == 99 ) ||
+                                   (point.x==99 && point.y == 0) ||
+                                    (point.y==99 && point.x == 99)){
+                    ided_point = true;
+                    if local_n != 4{
+                        println!("{:?},{:?}",point,local_n);
+                    }
+                }
+                if ((point.x == 0 || point.x == 99) || (point.y == 0 || point.y == 99)) && !ided_point{
+                    if local_n != 6{
+                        println!("{:?},{:?}",point,local_n);
+                    }
+                    ided_point = true;
+                }
+                if !ided_point && local_n != 9 && !ided_point{
+                    println!("{:?},{:?}",point,local_n);
+                }
+                
+                                                     
 
             }
             (ncount,count)

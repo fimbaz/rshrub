@@ -6,6 +6,7 @@ pub struct Region {
     pub width: usize,
     pub height: usize
 }
+#[derive(Clone,Copy, Debug, PartialEq)]
 pub struct Pos  {pub x:usize,pub y: usize}
     pub trait HasPos {
         fn get_pos(&self) -> Pos;
