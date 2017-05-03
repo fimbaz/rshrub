@@ -41,8 +41,7 @@ mod tests {
         }
         return tree;
     }
-
-    #[test]
+    #[test]	
     fn test_create_region(){
         let tree =create_full_region(100,100);
         assert_eq!(10000,tree.range_query(&tree.region).fold(0,|i,x|i+1));
@@ -52,8 +51,34 @@ mod tests {
         let a=Region{x:0,y:0,width:16384,height:16384};
         let mut tree: Tree<Pos> = create_full_region(100,100);
         assert_eq!(tree.range_query(&a).fold(0,|i,x|i+1),10000);
+    }
 
-        
+    #[cfg(feature="bench")]
+    #[bench]
+    fn bench_nq(b: &mut Bencher){
+        let a= Region{x:0,y:0,width:16384,height:16384};
+        let mut tree: Tree<Pos> = create_full_region(100,100);
+	let clj =||{
+            let mut ncount = 0;
+            let mut count = 0;
+            for point in tree.range_query(&a){
+                count = count + 1;
+                let mut hood = Region {x:point.x.saturating_sub(1), y:point.y.saturating_sub(1),height:2,width:2}; 
+                if point.x == 0 {
+                    hood.width = 1;
+                }
+                if point.y == 0 {
+                    hood.height = 1;
+                }
+	        for neighbor in tree.range_query(&hood){
+	    	    ncount = ncount +1;
+	        }
+
+            }
+            (ncount,count)
+	};
+	println!("{:?}",clj());
+        b.iter(clj);
     }
 
     #[cfg(feature="bench")]
