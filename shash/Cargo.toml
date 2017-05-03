@@ -1,0 +1,10 @@
+[package]
+name = "shash"
+version = "0.1.0"
+authors = ["Matthew Baker <fimbaz@gmail.com>"]
+
+[dependencies]
+fnv = "1.0.3"
+
+[features]
+bench = []
