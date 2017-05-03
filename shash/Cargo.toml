@@ -5,6 +5,7 @@ authors = ["Matthew Baker <fimbaz@gmail.com>"]
 
 [dependencies]
 fnv = "1.0.3"
+ref_slice = "1"
 
 [features]
 bench = []

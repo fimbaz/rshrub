@@ -1,5 +1,6 @@
 #![feature(test)]
 extern crate fnv;
+extern crate ref_slice;
 mod rect;
 mod grid;
 
