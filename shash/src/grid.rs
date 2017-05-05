@@ -22,6 +22,14 @@ impl <P: HasPos> Grid<P>{
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
     }
+    pub fn neighbor_query<'t>(&'t self,query:&'t Region) -> NeighborQuery<'t,P>{
+        let mut main_iter = self.map.iter();
+        let mut bucket_iter = (&[]).iter();
+        if let Some((key,bucket_vec)) = main_iter.next(){
+            bucket_iter = bucket_vec.iter()
+        }
+        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
+    }
 }
 impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
     type Item = &'t P;
@@ -45,6 +53,7 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
     }
 }
 
+
 struct NeighborQuery<'t,P: 't + HasPos>{
     grid: &'t Grid<P>,
     main_iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
@@ -55,7 +64,7 @@ struct NeighborQuery<'t,P: 't + HasPos>{
 }
 
 impl <'t,P: HasPos> NeighborQuery<'t,P>{
-    pub fn new(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,P>{
+    pub fn neighbor_query(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,P>{
         let mut main_iter = grid.map.iter();
         let mut bucket_iter = (&[]).iter();
         if let Some((key,bucket_vec)) = main_iter.next(){
@@ -69,7 +78,7 @@ impl<'t,P: HasPos>  NeighborQuery<'t,P>{
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
     //is out of scope.  This is to save us allocating a vec every single time (since the points we're
     //accessing aren't contiguous in the heap)
-    fn nexties<'r>(&'r mut self) -> Option<&'r Neighborhood<'r,P>>{
+    pub fn nexties<'r>(&'r mut self) -> Option<&'r Neighborhood<'r,P>>{
         'outer: loop{
             for point in &mut self.bucket{
                 let pos = point.get_pos();
@@ -81,6 +90,8 @@ impl<'t,P: HasPos>  NeighborQuery<'t,P>{
             }
             if let Some((key,bucket_vec)) = self.main_iter.next(){
                 self.bucket = bucket_vec.iter();
+            }else{
+                break;
             }
         }
         None
