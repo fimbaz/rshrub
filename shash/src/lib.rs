@@ -3,7 +3,7 @@ extern crate fnv;
 extern crate ref_slice;
 mod rect;
 mod grid;
-
+mod neighborhood;
 
 #[cfg(test)]
 mod tests {
@@ -68,7 +68,7 @@ mod tests {
                 for y in (0..100){
                     let region = Region::rectangle((x as usize).saturating_sub(1),(y as usize).saturating_sub(1),
                                                    if x == 0 { 1 } else { 2 },if y == 0 {1} else {2} );                    
-                    let nhood_size = if x == 0 || y == 0 { 2} else {2} ;
+
 
                     let ncount = grid.range_query(&region).fold(0,|i,x| { test::black_box(x);  i+1});
 //                    print'ln!("{:?}",ncount);
