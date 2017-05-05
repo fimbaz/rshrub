@@ -1,4 +1,4 @@
-#![feature(test)]
+#![feature(test,conservative_impl_trait)]
 extern crate fnv;
 extern crate ref_slice;
 mod rect;

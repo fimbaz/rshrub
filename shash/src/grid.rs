@@ -2,22 +2,30 @@ use rect::{Pos,HasPos,Region,BucketPos};
 use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
-struct Grid<P> {
-    height: usize,
-    width: usize,
-    bucket_size: usize,
-    map: FnvHashMap<BucketPos,P>
+use std::iter::Filter;
+struct Grid<P: HasPos> {
+    ground_level: usize,
+    map: FnvHashMap<BucketPos,Vec<P>>
 }
 
-impl <P> Grid<P> {
-    pub fn new(width: usize,height: usize,bucket_size: usize) -> Grid<P>{
-        let map = FnvHashMap::default();
-        Grid { height,width,bucket_size,map}
+struct RangeQuery<'t,P: HasPos + 't>{
+    region: &'t Region,
+    iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
+    map: &'t FnvHashMap<BucketPos,Vec<P>>,
+    inner_iter: slice::Iter<'t,P>
+}
+impl <P: HasPos> Grid<P>{
+    pub fn new(ground_level: usize) -> Grid<P>{
+        return Grid {map: FnvHashMap::default(),ground_level: ground_level};
     }
-                                                              
+    pub fn range_query<'t>(&'t self,region: &'t Region) -> RangeQuery<'t,P>{
+        let mut iter = self.map.iter();
+        let inner_iter = iter.next().unwrap().1.iter();
+        RangeQuery{region: region,map: &self.map,iter:iter,inner_iter: inner_iter}
+    }
 }
 
-
+/*
 struct NeighborQuery<'t,P: 't + HasPos>{
     map: &'t FnvHashMap<BucketPos,P>,
     query: &'t Region,
@@ -34,7 +42,6 @@ impl<'t,P: HasPos> Iterator for NeighborQuery<'t,P>{
         None
     }
 }
-/*
 fn get_neighbors(map:&FnvHashMap<BucketPos,Vec<Pos>>,bpos: BucketPos) -> Vec<&Pos>{
     let x = bpos.0.x;
     let y = bpos.0.y;
