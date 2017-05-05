@@ -73,16 +73,20 @@ impl BucketPos {
 
 pub struct Iter<'t> {
     region: &'t Region,
-    pos: Pos,
+    pos: BucketPos,
 }
 
 impl <'t> Iterator for Iter <'t>{
-    type Item = Pos;
-    fn next(&mut self) -> Option<Pos>{
+    type Item = BucketPos;
+    fn next(&mut self) -> Option<BucketPos>{
         if !self.region.contains(&self.pos){ return None;}
         let mut newpos = self.pos;
-        newpos.x+=RECT_BUCKET_SIZE;
-        if !self.region.contains(&newpos){ newpos = Pos::new(self.region.x,newpos.y+RECT_BUCKET_SIZE); }
+        newpos.0.x+=RECT_BUCKET_SIZE;
+        if !self.region.contains(&newpos){
+            newpos = BucketPos::new(self.region.x,newpos.0.y+RECT_BUCKET_SIZE);
+            
+        }
+        
         let oldpos = self.pos;
         self.pos = newpos;
         return Some(oldpos);
@@ -108,7 +112,7 @@ impl Region{
         self.x <= pos.x && self.y <= pos.y && self.x+self.width >= pos.x && self.y + self.height >= pos.y
     }
     pub fn iter(&self) -> Iter{
-         Iter{region:self,pos:Pos::new(self.x,self.y)}
+         Iter{region:self,pos:BucketPos::new(self.x,self.y)}
     }
     pub fn split(& self) -> Vec<Region> {
         let halfwidth = self.width / 2 ;

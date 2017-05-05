@@ -1,27 +1,47 @@
-use rect::{Pos,HasPos,Region,BucketPos};
+use rect::{Pos,HasPos,Region,BucketPos,Iter};
 use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
-struct Grid<P: HasPos> {
-    ground_level: usize,
-    map: FnvHashMap<BucketPos,Vec<P>>
+pub struct Grid<P: HasPos> {
+    pub ground_level: usize,
+    pub map: FnvHashMap<BucketPos,Vec<P>>
 }
 
-struct RangeQuery<'t,P: HasPos + 't>{
+pub struct RangeQuery<'t,P: HasPos + 't>{
+    bucket_keys: Iter<'t>,
     region: &'t Region,
-    iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
+//    iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
     map: &'t FnvHashMap<BucketPos,Vec<P>>,
-    inner_iter: slice::Iter<'t,P>
+    points: slice::Iter<'t,P>
 }
 impl <P: HasPos> Grid<P>{
     pub fn new(ground_level: usize) -> Grid<P>{
         return Grid {map: FnvHashMap::default(),ground_level: ground_level};
     }
     pub fn range_query<'t>(&'t self,region: &'t Region) -> RangeQuery<'t,P>{
-        let mut iter = self.map.iter();
-        let inner_iter = iter.next().unwrap().1.iter();
-        RangeQuery{region: region,map: &self.map,iter:iter,inner_iter: inner_iter}
+        RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
+    }
+}
+impl <'t,P: HasPos> Iterator for  RangeQuery<'t,P> {
+    type Item = &'t P;
+    fn next(&mut self) -> Option<&'t P> {
+        'outer: loop{
+            for  ref point in &mut self.points {
+                let pos = point.get_pos();
+                if self.region.contains(&pos){
+                    return Some(point);
+                }
+            }
+            for bucket in &mut self.bucket_keys{
+                if let Some(ref vec) = self.map.get(&bucket){
+                    self.points = vec.iter();
+                }
+                continue 'outer;
+            }
+            break;
+        }
+        None
     }
 }
 
