@@ -1,6 +1,6 @@
 use rect::{Pos,HasPos,Region,BucketPos};
 use fnv::FnvHashMap;
-use std::collections::hash_map::Iter;
+use std::collections::hash_map;
 use std::slice;
 struct Grid<P> {
     height: usize,
@@ -16,15 +16,15 @@ impl <P> Grid<P> {
     }
                                                               
 }
-                  
+
+
 struct NeighborQuery<'t,P: 't + HasPos>{
     map: &'t FnvHashMap<BucketPos,P>,
     query: &'t Region,
-    main_iter:  Iter<'t,BucketPos,P>
+    main_iter:  hash_map::Iter<'t,BucketPos,P>
 }
 impl <'t,P: HasPos> NeighborQuery<'t,P>{
     pub fn new(map:&'t FnvHashMap<BucketPos,P>,query:&'t Region) -> NeighborQuery<'t,P>{
-        
         NeighborQuery { map:map, query:query, main_iter:map.iter()}
     }
 }

@@ -11,7 +11,7 @@ mod tests {
     use fnv::FnvHashMap;
     use self::test::Bencher;
 
-    use rect::{BucketPos,Pos};
+    use rect::{BucketPos,Pos,Iter,Region};
     #[test]
     fn it_works() {
         let mut map = FnvHashMap::default();
@@ -21,6 +21,14 @@ mod tests {
             println!("{:?}",v);
         }
         
+    }
+    #[test]
+    fn rect_iterator(){
+        let region = Region::square(0,0,100);
+        println!("hi");
+        for pos in region.iter(){
+            println!("{:?}",pos);
+        }
     }
     #[cfg(feature="bench")]
     #[bench]

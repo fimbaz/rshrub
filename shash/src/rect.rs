@@ -40,8 +40,6 @@ impl  From<Pos> for BucketPos {
 
 impl Hash for BucketPos {
     fn hash<H: Hasher>(&self, state: &mut H) {
-//        println!("{:?}",(self.0.x/RECT_BUCKET_SIZE) as u32);
-//        println!("{:?}",(self.0.y/RECT_BUCKET_SIZE) as u32);
         state.write_u32((self.0.x/RECT_BUCKET_SIZE) as u32);
         state.write_u32((self.0.y/RECT_BUCKET_SIZE) as u32);
         state.finish();
@@ -73,6 +71,24 @@ impl BucketPos {
      }
 }
 
+pub struct Iter<'t> {
+    region: &'t Region,
+    pos: Pos,
+}
+
+impl <'t> Iterator for Iter <'t>{
+    type Item = Pos;
+    fn next(&mut self) -> Option<Pos>{
+        if !self.region.contains(&self.pos){ return None;}
+        let mut newpos = self.pos;
+        newpos.x+=RECT_BUCKET_SIZE;
+        if !self.region.contains(&newpos){ newpos = Pos::new(self.region.x,newpos.y+RECT_BUCKET_SIZE); }
+        let oldpos = self.pos;
+        self.pos = newpos;
+        return Some(oldpos);
+        
+    }    
+}
 
 impl Region{
     pub fn square(x: usize, y:usize, wh: usize) -> Region {
@@ -90,6 +106,9 @@ impl Region{
     pub fn contains<P: HasPos>(&self,p:&P) -> bool {
         let pos = p.get_pos();
         self.x <= pos.x && self.y <= pos.y && self.x+self.width >= pos.x && self.y + self.height >= pos.y
+    }
+    pub fn iter(&self) -> Iter{
+         Iter{region:self,pos:Pos::new(self.x,self.y)}
     }
     pub fn split(& self) -> Vec<Region> {
         let halfwidth = self.width / 2 ;
