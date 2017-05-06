@@ -1,6 +1,6 @@
 use rect::{HasPos,Pos,BucketPos};
 use grid::Grid;
-
+//Next step: make neighbor a slice.  Sigh...
 #[derive(Debug)]
 pub struct Neighborhood<'t,P: HasPos + 't> {
     pub top: Option<&'t P>,
@@ -18,6 +18,7 @@ impl <'t,P: HasPos> Neighborhood<'t,P> {
     pub fn default() -> Neighborhood<'t,P>{
         Neighborhood { top: None, top_right: None, right: None, bottom_right: None, bottom: None, bottom_left: None, left: None, top_left: None, point: None}
     }
+
     pub fn new<'r>(point: &'t P, iter:&'t mut Iterator<Item=&'r P>) -> Neighborhood<'r,P>{
         let mut nhood = Neighborhood::default();
         let p = point.get_pos();
