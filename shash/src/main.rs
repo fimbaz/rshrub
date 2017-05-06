@@ -23,5 +23,4 @@ fn main(){
     while let Some(item) = query.nexties(){
         println!("{:?}",item);
     }
-    
 }
