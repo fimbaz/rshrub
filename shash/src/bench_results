@@ -24,4 +24,14 @@ test tests::rq_neighquery2 ... 1000000
 bench: 834,073,933 ns/iter (+/- 300,341,001)
 
 
-So far, looks like key size 4 is best for dense and 3 is best for sparse
+So far, looks like bucket size 4 is best for dense and 3 is best for sparse
+
+On my AWS Box, w/ 32 bit keys and neighborhood size 4:
+test tests::rq_neighquery  ... 8988004
+bench: 225,238,870 ns/iter (+/- 18,182,827)
+test tests::rq_neighquery2 ... 1000000
+bench: 379,651,205 ns/iter (+/- 21,132,165)
+
+updating rust nightly doesn't change results at all.
+
+
