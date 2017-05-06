@@ -4,8 +4,7 @@ extern crate ref_slice;
 mod rect;
 mod grid;
 mod neighborhood;
-mod tile;
-mod game;
+
 #[cfg(test)]
 mod tests {
     extern crate test;
@@ -53,8 +52,8 @@ mod tests {
     #[bench]
     fn rq_neighquery(b: &mut Bencher){
         let mut grid = Grid::new(30);
-        for i in (0..100){
-            for j in (0..100){
+        for i in (0..1000){
+            for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
                 val.push(Pos::new(i,j));
             }
@@ -65,14 +64,12 @@ mod tests {
         let mut clj =|| {
             let mut query = grid.neighbor_query(&region);
             let mut count =0;
-            let mut element_count = 0;
             {
                 while let Some(nbors) =query.nexties(){
                     count += nbors.len();
-                    element_count += 1;
                 }
             }
-            (count,element_count)
+            count
         };
         println!("{:?}",clj());
         b.iter(clj);
@@ -143,3 +140,4 @@ mod tests {
     }
 
 }
+
