@@ -7,20 +7,22 @@ impl HasPos for Tile {
     }
 }
 
-#[derive(Copy,Clone)]
+#[derive(Debug,Copy,Clone)]
 pub enum Substrate{
     Dirt(),
     Space(),
 }
-#[derive(Copy,Clone)]
+#[derive(Debug,Copy,Clone)]
 pub struct Resources{
     pub water: f32,
     pub air: f32,
     pub substrate: Substrate,
 }
+#[derive(Debug,Copy,Clone)]
 pub struct CellData{
     pub resources: Resources
 }
+#[derive(Debug,Clone)]
 pub struct Tile{
     pub pos: Pos,
     pub data: RefCell<CellData>,
