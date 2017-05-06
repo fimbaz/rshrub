@@ -10,8 +10,8 @@ pub struct BoringGame {
 }
 
 impl BoringGame{
-    pub fn new_tile(&mut self,resources: Resources,pos:Pos) -> Tile{
-        let mut entry = self.grid.map.entry(BucketPos::from(pos)).or_insert(vec![]);
+    pub fn new_tile(&mut self,resources: Resources,pos:Pos) -> Result<(),String>{
+        let mut bucket = self.grid.map.entry(BucketPos::from(pos)).or_insert(vec![]);
         let substrate = if pos.y < self.grid.ground_level{
             Substrate::Dirt()
         }
@@ -22,7 +22,8 @@ impl BoringGame{
         let tile = Tile{pos:pos.clone(),
                         data:Box::new(InnerTile{resources:resources}),
                         substrate:substrate};
-        tile
+        bucket.push(tile);
+        Ok(())
     }
 
     pub fn new() -> BoringGame {
@@ -33,12 +34,14 @@ impl BoringGame{
                 game.new_tile(Resources{water: 1.0, air: 0.0 },Pos::new(i,j));
             }
         }
-        BoringGame { grid : Grid::new(30)}
+        game
     }
     pub fn simulate(&mut self) {
+        println!("hi");
         let region = Region::square(0,0,0); //dummy
         let mut all_the_neighbors_iter = self.grid.neighbor_query(&region); 
         while let Some(neighbors) = all_the_neighbors_iter.nexties() {
+            println!("whuddup");
             if neighbors.top.is_some(){
                 println!("we have a neighbor");
             }

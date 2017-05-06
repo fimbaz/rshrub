@@ -42,7 +42,7 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
                 }
             }
             for bucket in &mut self.bucket_keys{
-                if let Some(ref vec) = self.map.get(&bucket){
+                 if let Some(ref vec) = self.map.get(&bucket){
                     self.points = vec.iter();
                 }
                 continue 'outer;
