@@ -1,6 +1,29 @@
 use rect::{HasPos,Pos,BucketPos};
 use grid::Grid;
 //Next step: make neighbor a slice.  Sigh...
+pub enum Neighbor<'t,P: HasPos + 't> {
+    UpLeft(Option<&'t P>),
+    Up(Option<&'t P>),
+    UpRight(Option<&'t P>),
+    Right(Option<&'t P>),
+    DownRight(Option<&'t P>),
+    Down(Option<&'t P>),
+    DownLeft(Option<&'t P>),
+    Left(Option<&'t P>),
+    Point(Option<&'t P>)
+
+}
+pub struct  Neighborhood2<'t,P: HasPos + 't>(Vec<Neighbor<'t,P>>);
+impl <'t,P: HasPos +'t>  Neighborhood2<'t,P>{
+    pub fn new() -> Neighborhood2<'t,P> {
+        Neighborhood2(vec![Neighbor::UpLeft(None),Neighbor::Up(None),Neighbor::UpRight(None),
+                           Neighbor::Right(None),Neighbor::DownRight(None),Neighbor::Down(None),
+                           Neighbor::DownLeft(None),Neighbor::Left(None),Neighbor::Point(None)])
+    }
+    pub fn populate<'r>(&mut self,point: &'t P, iter:&'t mut Iterator<Item=&'r P>){ 
+        
+    }
+}
 #[derive(Debug)]
 pub struct Neighborhood<'t,P: HasPos + 't> {
     pub top: Option<&'t P>,
