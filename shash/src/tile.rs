@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use grid::Grid;
 use rect::{Pos,HasPos,Region,BucketPos,Iter};
 impl HasPos for Tile {
@@ -15,23 +16,30 @@ pub enum Substrate{
 pub struct Resources{
     pub water: f32,
     pub air: f32,
+    pub substrate: Substrate,
 }
-pub struct InnerTile{
+pub struct CellData{
     pub resources: Resources
 }
 pub struct Tile{
     pub pos: Pos,
-    pub substrate: Substrate,
-    pub data: Box<InnerTile>,
+    pub data: RefCell<CellData>,
 }
 
 
 
 impl Tile {
-    pub fn merge(&mut self,tile: &Tile){
-        self.data.resources.water += tile.data.resources.water;
-        self.data.resources.air += tile.data.resources.air;
-        self.substrate = tile.substrate;
+    pub fn new(pos:Pos,air:f32,water:f32,substrate:Substrate) -> Tile{
+        Tile{pos:pos,data:RefCell::new(CellData{resources:Resources{water,air,substrate}})}
+        
+    }
+    pub fn merge(&self,tile: &Tile){
+        let mut my_resources = self.data.borrow_mut().resources;
+        let mut other_resources = tile.data.borrow().resources;
+        my_resources.water += other_resources.water;
+        my_resources.air += other_resources.air;
+        my_resources.substrate = other_resources.substrate;
+
     }
 }
 

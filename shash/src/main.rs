@@ -1,6 +1,6 @@
 extern crate fnv;
 mod rect;
-mod game;
+mod boring_game;
 mod tile;
 mod grid;
 mod neighborhood;
@@ -8,8 +8,8 @@ use rect::{BucketPos,Pos,Region,HasPos};
 
 use fnv::FnvHashMap;
 use std::hash::Hash;
-use game::{BoringGame};
-
+use boring_game::game::{BoringGame};
+use std::cell::RefCell;
 fn main(){
 
     let mut map = FnvHashMap::default();
