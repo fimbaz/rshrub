@@ -3,7 +3,7 @@ use std::hash::{Hash,Hasher};
 use std::collections::hash_map::{Entry};
 
 pub const MAX_RECT_SIZE: usize = 16384;
-pub const RECT_BUCKET_SIZE: usize = 2;
+pub const RECT_BUCKET_SIZE: usize = 4;
 impl Eq for Pos {}
 impl Eq for BucketPos {}
 #[derive(Clone,Copy, Debug, PartialEq)]
@@ -40,8 +40,8 @@ impl  From<Pos> for BucketPos {
 
 impl Hash for BucketPos {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write_u32((self.0.x/RECT_BUCKET_SIZE) as u32);
-        state.write_u32((self.0.y/RECT_BUCKET_SIZE) as u32);
+        state.write_u16((self.0.x/RECT_BUCKET_SIZE) as u16);
+        state.write_u16((self.0.y/RECT_BUCKET_SIZE) as u16);
         state.finish();
   }
 }
@@ -79,12 +79,11 @@ pub struct Iter<'t> {
 impl <'t> Iterator for Iter <'t>{
     type Item = BucketPos;
     fn next(&mut self) -> Option<BucketPos>{
-        if !self.region.contains(&self.pos){ return None;}
+        if !self.region.contains_bucket::<BucketPos>(self.pos){ return None;}
         let mut newpos = self.pos;
         newpos.0.x+=RECT_BUCKET_SIZE;
-        if !self.region.contains(&newpos){
-            newpos = BucketPos::new(self.region.x,newpos.0.y+RECT_BUCKET_SIZE);
-            
+        if !self.region.contains_bucket::<BucketPos>(newpos){
+            newpos = BucketPos::new(self.region.x,newpos.0.y+RECT_BUCKET_SIZE);            
         }
         
         let oldpos = self.pos;
@@ -111,6 +110,13 @@ impl Region{
         let pos = p.get_pos();
         self.x <= pos.x && self.y <= pos.y && self.x+self.width >= pos.x && self.y + self.height >= pos.y
     }
+    pub fn contains_bucket<P: HasPos>(&self,bpos:BucketPos) -> bool {
+        bpos == BucketPos::new(self.x,self.y) ||
+            bpos == BucketPos::new(self.x+self.width,self.y) ||
+            bpos == BucketPos::new(self.x,self.y+self.height) ||
+            bpos == BucketPos::new(self.x+self.width,self.y+self.height) 
+    }
+
     pub fn iter(&self) -> Iter{
          Iter{region:self,pos:BucketPos::new(self.x,self.y)}
     }

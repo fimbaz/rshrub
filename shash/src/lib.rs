@@ -79,9 +79,9 @@ mod tests {
     #[bench]
     fn rq_neighquery2(b: &mut Bencher){
         let mut grid = Grid::new(30);
-        for i in (0..10000){
+        for i in (0..1000000){
             for j in (0..10000){
-                if i % 10 != 0 || j%10 !=0 {
+                if i % 100 != 0 || j%100 !=0 {
                     continue
                 }
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);

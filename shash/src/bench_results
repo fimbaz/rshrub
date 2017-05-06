@@ -1,0 +1,27 @@
+Neighborhood size 2, keys are 32 bit:
+running 2 tests
+test tests::rq_neighquery  ... 8988004
+bench: 626,011,905 ns/iter (+/- 215,017,964)
+test tests::rq_neighquery2 ... 1000000
+bench: 531,849,321 ns/iter (+/- 82,019,686)
+
+Neighborhood size 3, keys are 32 bit:
+test tests::rq_neighquery  ... 8988004
+bench: 475,454,547 ns/iter (+/- 324,128,119)
+test tests::rq_neighquery2 ... 1000000
+bench: 450,724,609 ns/iter (+/- 182,119,640)
+
+Neighborhood size 4, keys are 32 bit:
+test tests::rq_neighquery  ... 8988004
+bench: 352,023,959 ns/iter (+/- 93,337,459)
+test tests::rq_neighquery2 ... 1000000
+bench: 491,321,200 ns/iter (+/- 150,035,610)
+
+Neighborhood size 5, keys 32 bit:
+test tests::rq_neighquery  ... 8988004
+bench: 728,990,794 ns/iter (+/- 237,246,195)
+test tests::rq_neighquery2 ... 1000000
+bench: 834,073,933 ns/iter (+/- 300,341,001)
+
+
+So far, looks like key size 4 is best for dense and 3 is best for sparse
