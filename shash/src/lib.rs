@@ -75,6 +75,35 @@ mod tests {
         println!("{:?}",clj());
         b.iter(clj);
     }
+    #[cfg(feature="bench")]
+    #[bench]
+    fn rq_neighquery2(b: &mut Bencher){
+        let mut grid = Grid::new(30);
+        for i in (0..10000){
+            for j in (0..10000){
+                if i % 10 != 0 || j%10 !=0 {
+                    continue
+                }
+                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
+                val.push(Pos::new(i,j));
+            }
+        }
+        let region = Region::square(0,0,0);
+        let mut query = grid.neighbor_query(&region);
+
+        let mut clj =|| {
+            let mut query = grid.neighbor_query(&region);
+            let mut count =0;
+            {
+                while let Some(nbors) =query.nexties(){
+                    count += nbors.len();
+                }
+            }
+            count
+        };
+        println!("{:?}",clj());
+        b.iter(clj);
+    }
 
     
     #[cfg(feature="bench")]
