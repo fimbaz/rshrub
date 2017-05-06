@@ -5,6 +5,7 @@ mod rect;
 mod grid;
 mod neighborhood;
 mod tile;
+mod game;
 #[cfg(test)]
 mod tests {
     extern crate test;
