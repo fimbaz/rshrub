@@ -3,7 +3,7 @@ use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
-use neighborhood::Neighborhood;
+use neighborhood::Neighborhood2;
 pub struct Grid<P: HasPos> {
     pub ground_level: usize,
     pub map: FnvHashMap<BucketPos,Vec<P>>
@@ -11,7 +11,7 @@ pub struct Grid<P: HasPos> {
 
 pub struct RangeQuery<'t,'r,P: HasPos + 't>{
     bucket_keys: Iter<'r>,
-    region: &'r Region,
+    region: &'r  Region,
     map: &'t FnvHashMap<BucketPos,Vec<P>>,
     points: slice::Iter<'t,P>
 }
@@ -22,13 +22,13 @@ impl <P: HasPos> Grid<P>{
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
     }
-    pub fn neighbor_query<'t>(&'t self,query:&'t Region) -> NeighborQuery<'t,P>{
+    pub fn neighbor_query<'t,'r>(&'t self,query:&'t Region) -> NeighborQuery<'t,'r,P>{
         let mut main_iter = self.map.iter();
         let mut bucket_iter = (&[]).iter();
         if let Some((key,bucket_vec)) = main_iter.next(){
             bucket_iter = bucket_vec.iter()
         }
-        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
+        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood2::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
 impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
@@ -54,38 +54,38 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
 }
 
 
-struct NeighborQuery<'t,P: 't + HasPos>{
+struct NeighborQuery<'t,'r,P: 't + HasPos + 'r>{
     grid: &'t Grid<P>,
     main_iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
     bucket: slice::Iter<'t,P>,
-    nhood: Neighborhood<'t,P>,
+    nhood: Neighborhood2<'r,P>,
     region: Region,
         
 }
 
-impl <'t,P: HasPos> NeighborQuery<'t,P>{
-    pub fn neighbor_query(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,P>{
+impl <'t,'r,P: HasPos> NeighborQuery<'t,'r,P>{
+    pub fn neighbor_query(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,'r,P>{
         let mut main_iter = grid.map.iter();
         let mut bucket_iter = (&[]).iter();
         if let Some((key,bucket_vec)) = main_iter.next(){
             bucket_iter = bucket_vec.iter()
         }
-        NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
+        NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood2::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
-impl<'t,P: HasPos>  NeighborQuery<'t,P>{
+impl<'t,'r,P: HasPos>  NeighborQuery<'t,'r,P>{
     //returns a value that continues the iter borrow, so
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
     //is out of scope.  This is to save us allocating a vec every single time (since the points we're
     //accessing aren't contiguous in the heap)
-    pub fn nexties<'r>(&'r mut self) -> Option<&'r Neighborhood<'r,P>>{
+    pub fn nexties<'s>(&'t mut self) -> Option<&'r Neighborhood2<'s,P>>{
         'outer: loop{
             for point in &mut self.bucket{
                 let pos = point.get_pos();
                 self.region = Region::rectangle(pos.x.saturating_sub(1),pos.y.saturating_sub(1),
                                                 if pos.x == 0 { 1 } else { 2 },if pos.y == 0 {1} else {2} );
                 let mut rq = self.grid.range_query(&self.region);
-                self.nhood = Neighborhood::new(&point,&mut rq);
+                {self.nhood.populate(&point,&mut rq);}
                 return Some(&self.nhood);
             }
             if let Some((key,bucket_vec)) = self.main_iter.next(){

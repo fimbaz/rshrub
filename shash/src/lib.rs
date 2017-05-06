@@ -75,6 +75,7 @@ mod tests {
         println!("{:?}",clj());
         b.iter(clj);
     }
+
     
     #[cfg(feature="bench")]
     #[bench]

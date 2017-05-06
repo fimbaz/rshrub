@@ -40,9 +40,7 @@ impl BoringGame{
         let region = Region::square(0,0,0); //dummy
         let mut all_the_neighbors_iter = self.grid.neighbor_query(&region); 
         while let Some(neighbors) = all_the_neighbors_iter.nexties() {
-            if neighbors.top.is_some(){
-                
-            }
+
         }
     }
 }

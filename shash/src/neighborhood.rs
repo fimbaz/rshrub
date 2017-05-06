@@ -13,15 +13,57 @@ pub enum Neighbor<'t,P: HasPos + 't> {
     Point(Option<&'t P>)
 
 }
-pub struct  Neighborhood2<'t,P: HasPos + 't>(Vec<Neighbor<'t,P>>);
-impl <'t,P: HasPos +'t>  Neighborhood2<'t,P>{
+pub struct  Neighborhood2<'t,P: HasPos + 't>(Box<[Neighbor<'t,P>]>);
+impl <'t,'r,P: HasPos +'t + 'r>  Neighborhood2<'t,P>{
     pub fn new() -> Neighborhood2<'t,P> {
-        Neighborhood2(vec![Neighbor::UpLeft(None),Neighbor::Up(None),Neighbor::UpRight(None),
+        Neighborhood2(vec![Neighbor::Point(None),Neighbor::UpLeft(None),Neighbor::Up(None),Neighbor::UpRight(None),
                            Neighbor::Right(None),Neighbor::DownRight(None),Neighbor::Down(None),
-                           Neighbor::DownLeft(None),Neighbor::Left(None),Neighbor::Point(None)])
+                           Neighbor::DownLeft(None),Neighbor::Left(None)].into_boxed_slice())
     }
-    pub fn populate<'r>(&mut self,point: &'t P, iter:&'t mut Iterator<Item=&'r P>){ 
-        
+    pub fn default () -> Neighborhood2<'r,P>{
+        Neighborhood2::new()
+    }
+    pub fn populate(&'r mut self,point: &'t P, iter:&'t mut Iterator<Item=&'r P>){
+        let p = point.get_pos();
+        for neighbor in iter{
+            match neighbor.get_pos() {
+                //Point
+                n if n.x == p.x && n.y == p.y => { *self.0.get_mut(0).unwrap() = Neighbor::Point(Some(neighbor)); }
+
+                //Top Left
+                n if p.x.checked_sub(1).is_some() && p.y.checked_sub(1).is_some() &&
+                    n.x == p.x-1 && n.y == p.y-1 => {*self.0.get_mut(1).unwrap() = Neighbor::UpLeft(Some(neighbor)); }
+                //Top
+                n if p.y.checked_sub(1).is_some() &&
+                    n.x == p.x && n.y == p.y-1 => {*self.0.get_mut(2).unwrap() = Neighbor::Up(Some(neighbor)); }
+
+                //Top Right
+                n if p.x.checked_add(1).is_some() && p.y.checked_sub(1).is_some() &&
+                    n.x == p.x+1 && n.y == p.y-1 => {*self.0.get_mut(3).unwrap() = Neighbor::UpRight(Some(neighbor)); }
+
+                //Right                
+                n if p.x.checked_add(1).is_some() &&
+                    n.x == p.x+1 && n.y == p.y => {*self.0.get_mut(4).unwrap() = Neighbor::Right(Some(neighbor)); }
+
+                //Bottom Right
+                n if p.x.checked_add(1).is_some() &&  p.y.checked_add(1).is_some() &&
+                    n.x == p.x+1 && n.y == p.y + 1 => {*self.0.get_mut(5).unwrap() = Neighbor::DownRight(Some(neighbor)); }
+
+                //Bottom
+                n if p.y.checked_add(1).is_some() &&
+                    n.x == p.x && n.y == p.y + 1 => {*self.0.get_mut(6).unwrap() = Neighbor::Down(Some(neighbor)); }
+
+                //Bottom Left
+                n if p.x.checked_sub(1).is_some() &&  p.y.checked_add(1).is_some() &&
+                    n.x == p.x-1 && n.y == p.y+1 => {*self.0.get_mut(7).unwrap() = Neighbor::DownLeft(Some(neighbor)); }
+                //Left
+                n if p.x.checked_sub(1).is_some() &&
+                    n.x == p.x-1 && n.y == p.y => {*self.0.get_mut(8).unwrap() = Neighbor::Left(Some(neighbor)); }
+                
+                _ => {}
+            }
+
+        }
     }
 }
 #[derive(Debug)]
