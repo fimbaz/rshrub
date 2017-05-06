@@ -4,7 +4,8 @@ extern crate ref_slice;
 mod rect;
 mod grid;
 mod neighborhood;
-
+mod game;
+mod tile;
 #[cfg(test)]
 mod tests {
     extern crate test;

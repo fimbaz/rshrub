@@ -9,6 +9,3 @@ ref_slice = "1"
 
 [features]
 bench = []
-
-[profile.release]
-debug =true
