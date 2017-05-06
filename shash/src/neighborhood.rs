@@ -14,16 +14,16 @@ pub enum Neighbor<'t,P: HasPos + 't> {
 
 }
 pub struct  Neighborhood2<'t,P: HasPos + 't>(Box<[Neighbor<'t,P>]>);
-impl <'t,'r,P: HasPos +'t + 'r>  Neighborhood2<'t,P>{
+impl <'t,P: HasPos +'t>  Neighborhood2<'t,P>{
     pub fn new() -> Neighborhood2<'t,P> {
         Neighborhood2(vec![Neighbor::Point(None),Neighbor::UpLeft(None),Neighbor::Up(None),Neighbor::UpRight(None),
                            Neighbor::Right(None),Neighbor::DownRight(None),Neighbor::Down(None),
                            Neighbor::DownLeft(None),Neighbor::Left(None)].into_boxed_slice())
     }
-    pub fn default () -> Neighborhood2<'r,P>{
+    pub fn default () -> Neighborhood2<'t,P>{
         Neighborhood2::new()
     }
-    pub fn populate(&'r mut self,point: &'t P, iter:&'t mut Iterator<Item=&'r P>){
+    pub fn populate<'r,'s>(&'s mut self,point: &'r P, iter:&'r mut Iterator<Item=&'t P>){
         let p = point.get_pos();
         for neighbor in iter{
             match neighbor.get_pos() {
