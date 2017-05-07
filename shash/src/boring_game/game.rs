@@ -6,22 +6,19 @@ use rect::{BucketPos,Pos,Region};
 use grid::Grid;
 use std::cell::RefCell;
 use neighborhood::Neighborhood;
-use tile::{Tile,Resources,Substrate};
+use tile::{Tile,TileHolder,Resources,Substrate};
 pub struct BoringGame {
-    pub grid: Grid<Tile>
+    pub grid: Grid<TileHolder>
 }
 
 impl BoringGame{
     pub fn new_tile(&mut self,pos:Pos,water: f32, air: f32) -> Result<(),String>{
-        let mut bucket = self.grid.map.entry(BucketPos::from(pos)).or_insert(vec![]);
         let substrate = if pos.y < self.grid.ground_level{
             Substrate::Dirt()
         }
         else {
             Substrate::Space()
         };
-        
-        bucket.push(Tile::new(pos,water,air,substrate));
         Ok(())
     }
 

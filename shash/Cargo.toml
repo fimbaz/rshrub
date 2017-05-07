@@ -7,5 +7,8 @@ authors = ["Matthew Baker <fimbaz@gmail.com>"]
 fnv = "1.0.3"
 ref_slice = "1"
 
+[profile.release]
+debug = true
+
 [features]
 bench = []

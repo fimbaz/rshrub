@@ -2,6 +2,7 @@ use rect::{Pos,HasPos,Region,BucketPos,Iter};
 use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
+use tile::MergeCells;
 use std::iter::Filter;
 use neighborhood::Neighborhood2;
 pub struct Grid<P: HasPos> {
@@ -15,9 +16,16 @@ pub struct RangeQuery<'t,'r,P: HasPos + 't>{
     map: &'t FnvHashMap<BucketPos,Vec<P>>,
     points: slice::Iter<'t,P>
 }
-impl <P: HasPos> Grid<P>{
+impl <P: HasPos + MergeCells> Grid<P>{
     pub fn new(ground_level: usize) -> Grid<P>{
         return Grid {map: FnvHashMap::default(),ground_level: ground_level};
+    }
+    pub fn insert(&mut self,point: P){
+        let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(vec![]);
+        if let Some(ref existing_point) = bucket.iter().find(|x|x.get_pos()==point.get_pos()){
+            existing_point.merge(point);
+        }
+            
     }
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
@@ -54,7 +62,7 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
 }
 
 
-struct NeighborQuery<'t,P: 't + HasPos>{
+struct NeighborQuery<'t,P: HasPos + MergeCells + 't>{
     grid: &'t Grid<P>,
     main_iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
     bucket: slice::Iter<'t,P>,
@@ -63,7 +71,7 @@ struct NeighborQuery<'t,P: 't + HasPos>{
         
 }
 
-impl <'t,P: HasPos> NeighborQuery<'t,P>{
+impl <'t,P: HasPos + MergeCells> NeighborQuery<'t,P>{
     pub fn neighbor_query(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,P>{
         let mut main_iter = grid.map.iter();
         let mut bucket_iter = (&[]).iter();
@@ -73,12 +81,12 @@ impl <'t,P: HasPos> NeighborQuery<'t,P>{
         NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood2::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
-impl<'t,P: HasPos>  NeighborQuery<'t,P>{
+impl<'t,P: HasPos + MergeCells>  NeighborQuery<'t,P>{
     //returns a value that continues the iter borrow, so
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
     //is out of scope.  This is to save us allocating a vec every single time (since the points we're
     //accessing aren't contiguous in the heap)
-    pub fn nexties<'r>(&'r mut self) -> Option<&'r Neighborhood2<'r,P>>{
+    pub fn nexties<'r,'s>(&'r mut self) -> Option<&'s Neighborhood2<'r,P>>{
         'outer: loop{
             for point in &mut self.bucket{
                 let pos = point.get_pos();
