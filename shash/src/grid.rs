@@ -27,6 +27,15 @@ impl <P: HasPos + MergeCells> Grid<P>{
         }
             
     }
+    pub fn delete(&mut self,pos: Pos) -> Option<P>{
+        if let Some(bucket) = self.map.get_mut(&BucketPos::from(pos)){
+            if let Some(i) = bucket.iter().position(|x|x.get_pos()==pos){
+                let point = bucket.remove(i);
+                return Some(point);
+            }
+        }
+        return None;
+    }
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
     }
