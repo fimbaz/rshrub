@@ -27,6 +27,13 @@ impl <P: HasPos + MergeCells> Grid<P>{
         }
             
     }
+    //TODO remove internal calls and save a hash.
+    pub fn translate(&mut self,old_pos: Pos,new_pos: Pos){
+        if let Some(mut point) = self.delete(old_pos) {
+            point.set_pos(new_pos.x,new_pos.y);
+            self.insert(point);
+        }
+    }
     pub fn delete(&mut self,pos: Pos) -> Option<P>{
         if let Some(bucket) = self.map.get_mut(&BucketPos::from(pos)){
             if let Some(i) = bucket.iter().position(|x|x.get_pos()==pos){

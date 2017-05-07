@@ -5,6 +5,9 @@ impl HasPos for TileHolder {
     fn get_pos(&self) -> Pos {
         return Pos {x:self.pos.x,y:self.pos.y};
     }
+    fn set_pos(&mut self,x: usize, y: usize){
+        self.pos = Pos { x , y };
+    }
 }
 
 pub trait MergeCells {

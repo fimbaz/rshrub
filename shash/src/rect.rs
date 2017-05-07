@@ -17,11 +17,16 @@ pub struct Region {
 pub struct Pos  {pub x:usize,pub y: usize}
     pub trait HasPos {
         fn get_pos(&self) -> Pos;
+        fn set_pos(&mut self,x: usize, y: usize);
     }
 impl HasPos for Pos {
     fn get_pos(&self) -> Pos {
         return Pos {x:self.x,y:self.y};
     }
+    fn set_pos(&mut self,x: usize, y: usize){
+        *self = Pos { x , y };
+    }
+
 }
 #[derive(Clone,Copy,Debug)]
 pub struct BucketPos(pub Pos);
@@ -29,7 +34,9 @@ impl HasPos for BucketPos {
     fn get_pos(&self) -> Pos {
         return self.0;
     }
-                                    
+    fn set_pos(&mut self,x: usize, y: usize){
+        unreachable!();
+    }
 }
 
 impl  From<Pos> for BucketPos {
