@@ -13,6 +13,24 @@ mod tests {
     use self::test::Bencher;
     use grid::{Grid,RangeQuery};
     use rect::{BucketPos,Pos,Iter,Region,HasPos};
+    use tile::MergeCells;
+    #[derive(Debug)]
+    struct ToyPos ( Pos );
+    impl HasPos for ToyPos {
+        fn get_pos(&self) -> Pos{
+            self.0
+        }
+    }
+    impl MergeCells for ToyPos {
+        fn merge(&self,point:ToyPos) {
+        }
+    }
+    impl ToyPos {
+        pub fn new(x: usize, y: usize) -> ToyPos{
+            ToyPos(Pos::new(x,y))
+        }
+    }
+    
     #[test]
     fn it_works() {
         let mut map = FnvHashMap::default();
@@ -38,7 +56,7 @@ mod tests {
         for i in (0..1000){
             for j in (0..1000){
                 let val = map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let clj =  (|| {
@@ -56,7 +74,7 @@ mod tests {
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let region = Region::square(0,0,0);
@@ -85,7 +103,7 @@ mod tests {
                     continue
                 }
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let region = Region::square(0,0,0);
@@ -113,7 +131,7 @@ mod tests {
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let mut ncount = 0;
@@ -145,12 +163,12 @@ mod tests {
         for i in (0..100){
             for j in (0..100){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let region = Region { x: 0, y: 5, width: 2, height: 2 };
         
-        let vec: Vec<&Pos> = grid.range_query(&region).collect();
+        let vec: Vec<&ToyPos> = grid.range_query(&region).collect();
         println!("{:?}",vec);
     }
     #[test]
@@ -159,7 +177,7 @@ mod tests {
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(Pos::new(i,j));
+                val.push(ToyPos::new(i,j));
             }
         }
         let reg= Region { x: 0, y: 2, width: 2, height: 2 };

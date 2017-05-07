@@ -13,13 +13,14 @@ use std::cell::RefCell;
 fn main(){
 
     let mut map = FnvHashMap::default();
-    for i in 0..100{
-        for j in 0..100{
+    for i in 0..1000{
+        for j in 0..1000{
             let pos = BucketPos::new(i,j);
             let  value = map.entry(pos).or_insert(vec![]);
             value.push(Pos::new(i,j));
         }
     }
+     
     let pos2 = BucketPos::new(2,2);
     println!("{:?}",map.get(&pos2));
     let mut  game = BoringGame::new();
