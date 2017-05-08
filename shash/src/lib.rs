@@ -20,6 +20,10 @@ mod tests {
         fn get_pos(&self) -> Pos{
             self.0
         }
+        fn set_pos(&mut self,x: usize,y: usize){
+            self.0 = Pos { x, y};
+        }
+
     }
     impl MergeCells for ToyPos {
         fn merge(&self,point:ToyPos) {
