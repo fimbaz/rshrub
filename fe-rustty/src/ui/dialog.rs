@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::boxed::Box;
 
 use core::position::{Size, HasSize};
-use core::cellbuffer::CellAccessor;
+use core::cellbuffer::{Cell,CellAccessor};
 
 use ui::core::{
     Alignable,
@@ -38,8 +38,8 @@ use ui::label::Label;
 ///
 pub struct Dialog {
     frame: Frame,
-    buttons: Vec<Box<Button>>,
-    layouts: Vec<Box<Layout>>,
+    pub buttons: Vec<Box<Button>>,
+    pub layouts: Vec<Box<Layout>>,
     accel2result: HashMap<char, ButtonResult>,
 }
 
@@ -214,8 +214,18 @@ impl Widget for Dialog {
         self.frame.draw_box();
     }
 
-    fn resize(&mut self, new_size: Size) {
-        self.frame.resize(new_size);
+fn resize(&mut self, new_size: Size) {
+    self.frame.resize(new_size);
+        self.frame.clear(Cell::with_char(' '));
+        for layout in &mut self.layouts{
+            layout.frame_mut().realign(&self.frame);
+            layout.frame_mut().draw_into(&mut self.frame);
+        }
+        for button in &mut self.buttons{
+            button.frame_mut().realign(&self.frame);
+            button.frame_mut().draw_into(&mut self.frame);
+        }
+
     }
 
     fn frame(&self) -> &Frame {

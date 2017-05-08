@@ -1,11 +1,11 @@
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub enum VerticalAlign {
     Top,
     Middle,
     Bottom,
 }
 
-#[derive(Clone)]
+#[derive(Clone,Copy)]
 pub enum HorizontalAlign {
     Left,
     Middle,

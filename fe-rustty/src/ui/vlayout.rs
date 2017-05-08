@@ -1,5 +1,5 @@
 use core::position::{Size, Pos, HasSize, HasPosition};
-use core::cellbuffer::CellAccessor;
+use core::cellbuffer::{Cell,CellAccessor};
 use std::boxed::Box;
 use std::collections::HashMap;
 use ui::core::{
@@ -39,7 +39,7 @@ use ui::core::{
 /// ```
 ///
 pub struct VerticalLayout {
-    frame: Frame,
+    pub frame: Frame,
     inner_margin: usize,
     origin: Pos,
     widgets: Vec<Box<Button>>
@@ -93,7 +93,11 @@ impl Widget for VerticalLayout {
     }
 
     fn resize(&mut self, new_size: Size) {
+        self.frame.clear(Cell::with_char(' '));
         self.frame.resize(new_size);
+        for widget in &mut self.widgets{
+            widget.frame_mut().draw_into(&mut self.frame);
+        }
     }
 
     fn frame(&self) -> &Frame {
