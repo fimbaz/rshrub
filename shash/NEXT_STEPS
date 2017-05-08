@@ -1,0 +1,20 @@
+Range query is working now but not stable-- neighborhood needs to get lazy, basically.
+That way we don't have to pull neighbors to simulate, say, dirt.  
+
+That said, we're doing OK already, with a 2-4x speedup over the old quadtree for 1 million dense. 
+Sparse is worse for the same cell count and I don't totally understand why.. 
+this will need to be investigated at some point:
+
+
+test tests::rq_neighquery(dense)  ... 8988004
+bench: 250,838,981 ns/iter (+/- 177,914,204)
+test tests::rq_neighquery2(sparse) ... 1000000
+bench: 382,892,760 ns/iter (+/- 18,854,237)
+--
+
+that said, the next big push is UI.  Needs its own directory because a UI  is a big pile of 
+ugly glue and doesn't deserve to live with the core stuff.  
+
+
+
+
