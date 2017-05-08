@@ -17,15 +17,24 @@ use rustty::ui::core::{
 };
 
 enum MenuEvent{
-    Quit
+    Quit,
+    Up,
+    Left,
+    Down,
+    Right
 }
 impl MenuEvent {
     pub fn try_from(i: i32) -> Result<(),()>{
         match i{
-            1 => {MenuEvent::Quit; Ok(())},
-            _ => Err(()),
+            1 => {MenuEvent::Quit},
+            2 => {MenuEvent::Up},
+            3 => {MenuEvent::Left},
+            4 => {MenuEvent::Down},
+            5 => {MenuEvent::Right},
+            _ => {return Err(());},
                 
         }
+        Ok()
     }
 }
 
