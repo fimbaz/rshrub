@@ -9,8 +9,8 @@ use ui::core::alignable::{Alignable};
 /// widget should contain one `Frame` type to be used to render
 /// text to the screen
 pub struct Frame {
-    pub origin: Pos,
-    pub size: Size,
+    origin: Pos,
+    size: Size,
     buf: Vec<Cell>,
 }
 
