@@ -1,4 +1,5 @@
 extern crate fnv;
+extern crate rustty;
 mod rect;
 mod boring_game;
 mod tile;

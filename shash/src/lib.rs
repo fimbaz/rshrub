@@ -1,11 +1,14 @@
 #![feature(test,conservative_impl_trait)]
 extern crate fnv;
 extern crate ref_slice;
+extern crate rustty;
 mod rect;
 mod grid;
 mod neighborhood;
 mod boring_game;
 mod tile;
+mod ui;
+
 #[cfg(test)]
 mod tests {
     extern crate test;
@@ -13,7 +16,7 @@ mod tests {
     use self::test::Bencher;
     use grid::{Grid,RangeQuery};
     use rect::{BucketPos,Pos,Iter,Region,HasPos};
-    use tile::MergeCells;
+    use grid::GridCell;
     #[derive(Debug)]
     struct ToyPos ( Pos );
     impl HasPos for ToyPos {
@@ -25,7 +28,7 @@ mod tests {
         }
 
     }
-    impl MergeCells for ToyPos {
+    impl GridCell for ToyPos {
         fn merge(&self,point:ToyPos) {
         }
     }

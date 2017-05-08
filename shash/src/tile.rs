@@ -1,6 +1,7 @@
 use std::cell::RefCell;
-use grid::Grid;
+use grid::{Grid,GridCell};
 use rect::{Pos,HasPos,Region,BucketPos,Iter};
+use rustty::Cell;
 impl HasPos for TileHolder {
     fn get_pos(&self) -> Pos {
         return Pos {x:self.pos.x,y:self.pos.y};
@@ -10,9 +11,7 @@ impl HasPos for TileHolder {
     }
 }
 
-pub trait MergeCells {
-    fn merge(&self,point:Self);
-}
+
 #[derive(Debug,Copy,Clone)]
 pub enum Substrate{
     Dirt(),
@@ -38,6 +37,15 @@ impl Tile{
     pub fn new_v1(water:f32,air:f32,substrate: Substrate) -> Tile{
         return Tile { resources: Resources {water,air,substrate} };
     }
+    pub fn repr(&self)  -> Cell{
+        return Cell::default();
+    }
+    pub fn stp_ground_repr() -> Cell{
+        return Cell::with_char('.');
+    }
+    pub fn stp_air_repr() -> Cell{
+        return Cell::with_char(' ');
+    }
 }
 
 impl TileHolder {
@@ -46,8 +54,8 @@ impl TileHolder {
     }
 }
 
-impl MergeCells for TileHolder{
-    fn merge(&self,cell:TileHolder){
+impl GridCell for TileHolder{
+    fn merge(&self,cell:Self){
         let mut my_resources = self.tile.borrow_mut().resources;
         let other_resources = self.tile.borrow().resources;
         my_resources.water += other_resources.water;
