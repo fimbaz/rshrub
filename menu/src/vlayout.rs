@@ -29,11 +29,31 @@ impl VerticalLayout {
             frame: Frame::new(width, height),
             inner_margin: inner_margin,
             origin: first_origin,
-            widgets: widgets
+            widgets: widgets,
         }
     }
+    fn get_focused(&self) -> Option<&Box<Button>>{
+        for button in &self.widgets{
+            if button.get_focus(){
+                return Some(button);
+            }
 
-
+        }
+        return None;
+    }
+    fn set_inner_focus(&mut self,index: usize){
+        for (i,widget) in &mut self.widgets.iter_mut().enumerate(){
+            if index == i{
+                widget.set_focus();
+            }else{
+                widget.unset_focus();
+            }
+        }
+    }
+    pub fn redraw(&mut self){
+        let size = self.frame.size();
+        self.resize(size);
+    }
 }
 
 impl Widget for VerticalLayout {
@@ -85,5 +105,23 @@ impl Layout for VerticalLayout {
     fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button>> {
         self.widgets.iter_mut().collect()
     }
+    fn down(&mut self){
+        let i = (self.widgets.iter().position(|w|w.get_focus()).unwrap_or(0) + 1) % self.widgets.len();
+        self.set_inner_focus(i);
+        self.redraw();
+    }
+    fn up(&mut self){
+        let i = (self.widgets.iter().position(|w|w.get_focus()).unwrap_or(0).checked_sub(1).unwrap_or(self.widgets.len()-1)) % self.widgets.len();
+        self.set_inner_focus(i);
+        self.redraw();
+    }
 
 }
+/*
+impl Button for VerticalLayout{
+    fn result(&self,result: ButtonResult) -> Option<ButtonResult>{
+        if let ButtonEvent::KeyPress(c) = result{
+        }
+    }
+}
+*/

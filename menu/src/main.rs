@@ -31,17 +31,18 @@ fn main(){
     //    dialog.add_label(label1);
     let mut quitbutton = StdButton::new("Quit",'q',ButtonResult::Quit);
     let mut cont = StdButton::new("Continue",'j',ButtonResult::Quit);
-    let mut layout = VerticalLayout::from_vec(vec![Box::new(quitbutton),Box::new(cont)],0);
+    let mut special = StdButton::new("Go Back In Time and Kill Hitler's Grandmother",'j',ButtonResult::Quit);
+    let mut layout = VerticalLayout::from_vec(vec![Box::new(quitbutton),Box::new(cont),Box::new(special)],0);
+//    layout.down();
     dialog.add_layout(layout);
-
-
-
     
     'main:  loop{
         while let Some(Event::Key(ch)) = term.get_event(10).unwrap(){
-            match dialog.result_for_key(ch){
-                Some(ButtonResult::Quit) => {break 'main;}
+            match ch{
+                'w' => dialog.layouts.get_mut(0).unwrap().up(),
+                's' => dialog.layouts.get_mut(0).unwrap().down(),
                 _ => {}
+                    
             }
             term.clear();
             dialog.resize(term.size());

@@ -10,6 +10,9 @@ pub trait Layout: Widget {
     fn align_elems(&mut self);
     fn get_buttons(&self) -> Vec<&Box<Button>>;
     fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button>>;
+    fn down(&mut self);
+    fn up(&mut self);
+    
 }
 
 
