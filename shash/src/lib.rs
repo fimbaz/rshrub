@@ -2,7 +2,7 @@
 extern crate fnv;
 extern crate ref_slice;
 extern crate rustty;
-mod rect;
+pub mod rect;
 mod grid;
 mod neighborhood;
 mod boring_game;

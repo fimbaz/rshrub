@@ -1,6 +1,5 @@
 use core::position::{HasSize, HasPosition};
 use ui::core::attributes::{HorizontalAlign, VerticalAlign};
-use ui::core::Widget;
 
 pub trait Alignable: HasSize + HasPosition {
     fn get_valign(& self) -> VerticalAlign{

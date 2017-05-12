@@ -25,8 +25,8 @@ impl BoringGame{
     pub fn new() -> BoringGame {
         let mut grid = Grid::new(30);
         let mut game= BoringGame { grid: grid };
-        for i in (0..100){
-            for j in (0..100) {
+        for i in 0..100 {
+            for j in 0..100 {
                 game.new_tile(Pos::new(i,j),1.0,0.0);
             }
         }

@@ -24,8 +24,8 @@ enum MenuEvent{
     Right
 }
 impl MenuEvent {
-    pub fn try_from(i: i32) -> Result<(),()>{
-        match i{
+    pub fn try_from(i: i32) -> Result<MenuEvent,()>{
+        let event = match i{
             1 => {MenuEvent::Quit},
             2 => {MenuEvent::Up},
             3 => {MenuEvent::Left},
@@ -33,8 +33,8 @@ impl MenuEvent {
             5 => {MenuEvent::Right},
             _ => {return Err(());},
                 
-        }
-        Ok()
+        };
+        Ok(event)
     }
 }
 

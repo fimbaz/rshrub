@@ -1,4 +1,4 @@
-use core::position::{Size, HasSize,Pos,HasPosition};
+use core::position::{Size, HasSize};
 use core::cellbuffer::{Attr, CellAccessor};
 
 use ui::core::{
