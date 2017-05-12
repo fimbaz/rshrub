@@ -1,5 +1,6 @@
 use rustty::ui::core::{Widget};
-use button::ButtonResult;
+use button::{Button,ButtonResult};
+use std::cell::RefCell;
 use rustty::HasSize;
 use std::collections::HashMap;
 
@@ -7,6 +8,7 @@ use std::collections::HashMap;
 /// and method for forwarding keys to the parent widgets key map. 
 pub trait Layout: Widget {
     fn align_elems(&mut self);
+    fn get_buttons(&self) -> Vec<&RefCell<Box<Button>>>;
 }
 
 

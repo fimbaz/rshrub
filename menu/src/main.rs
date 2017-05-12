@@ -17,11 +17,10 @@ use rustty::ui::core::{
 
 use rustty::ui::{
     Label,
-    VerticalLayout,
-    HorizontalLayout
 };
 use button::{Button,StdButton,ButtonResult};
 use dialog::Dialog;
+use vlayout::VerticalLayout;
 fn main(){
     let mut term = Terminal::new().unwrap();
     let size = term.size();
@@ -34,12 +33,10 @@ fn main(){
     //    dialog.add_label(label1);
     let mut quitbutton = StdButton::new("Quit",'q',ButtonResult::Quit);
     let mut cont = StdButton::new("Continue",'j',ButtonResult::Quit);
-    cont.frame_mut().set_style(Color::Default,Color::Default,Attr::Reverse);
-    let mut menu1 = Menu::from_vec(vec![Box::new(quitbutton),Box::new(cont)],0);
+    let mut layout = VerticalLayout::from_vec(vec![Box::new(quitbutton),Box::new(cont)],0);
+    dialog.add_layout(layout);
 
 
-    menu1.pack(&dialog,HorizontalAlign::Middle,VerticalAlign::Middle,(0,0));
-    dialog.add_layout(menu1);
 
     
     'main:  loop{

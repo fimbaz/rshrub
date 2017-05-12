@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::boxed::Box;
-
+use std::cell::RefCell;
 use rustty::{Size, HasSize,Cell,CellAccessor};
 use rustty::ui::{Label};
 use rustty::ui::core::{
@@ -53,6 +53,9 @@ impl Menu{
 impl Layout for Menu{
     fn align_elems(&mut self){
         self.layout.align_elems();
+    }
+    fn get_buttons(&self) -> Vec<&RefCell<Box<Button>>> {
+        self.layout.get_buttons()
     }
 }
 

@@ -1,6 +1,7 @@
- use std::collections::HashMap;
+use std::collections::HashMap;
 use std::boxed::Box;
 
+use std::cell::RefCell;
 use rustty::{Size, HasSize};
 use rustty::{Cell,CellAccessor};
 
@@ -19,7 +20,6 @@ use rustty::ui::Label;
 
 pub struct Dialog {
     frame: Frame,
-    pub buttons: Vec<Box<Button>>,
     pub layouts: Vec<Box<Layout>>,
 }
 
@@ -28,18 +28,18 @@ impl Dialog {
     pub fn new(cols: usize, rows: usize) -> Dialog {
         Dialog {
             frame: Frame::new(cols, rows),
-            buttons: Vec::new(),
             layouts: Vec::new(),
         }
     }
-    pub fn add_button<T: Button + 'static>(&mut self, button: T) {
-        self.buttons.push(Box::new(button));
-
-        self.buttons.last_mut().unwrap().draw(&mut self.frame);
-    }
     pub fn add_layout<T: Layout + 'static>(&mut self, layout: T) {
+        if self.get_focused().is_none(){
+            for layout in &self.layouts {
+                for button in layout.get_buttons(){
+                    
+                }
+            }
+        }
         self.layouts.push(Box::new(layout));
-        
         self.layouts.last_mut().unwrap().align_elems();
         self.layouts.last_mut().unwrap().frame().draw_into(&mut self.frame);
     }
@@ -48,20 +48,25 @@ impl Dialog {
         label.draw(&mut self.frame);
     }
 
-    pub fn focus_button(&mut self, index:usize) {
-        if let Some(button) = self.buttons.get_mut(index){
-            button.set_focus()
+    pub fn get_focused(&self) -> Option<&RefCell<Box<Button>>>{
+        for layout in &self.layouts{
+            for button in layout.get_buttons(){
+                if button.borrow().get_focus(){
+                    return Some(button)
+                }
+            }
         }
-        
+        None
     }
-
 
     pub fn result_for_key(&self, key: char) -> Option<ButtonResult> {
         let mut maybe_result: Option<ButtonResult> = None;
-        for button in &self.buttons{
-            match button.result(ButtonResult::KeyPress(key)){
-                Some(result) => {  return Some(result); }
-                None => { continue ; }
+        for layout in &self.layouts{
+            for button in layout.get_buttons(){
+                match button.borrow().result(ButtonResult::KeyPress(key)){
+                    Some(result) => {return Some(result); }
+                    None => {continue; }
+                }
             }
         }
         None
@@ -89,11 +94,6 @@ fn resize(&mut self, new_size: Size) {
             layout.frame_mut().realign(&self.frame);
             layout.frame_mut().draw_into(&mut self.frame);
         }
-        for button in &mut self.buttons{
-            button.frame_mut().realign(&self.frame);
-            button.frame_mut().draw_into(&mut self.frame);
-        }
-
     }
 
     fn frame(&self) -> &Frame {
