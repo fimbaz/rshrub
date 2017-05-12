@@ -8,7 +8,8 @@ use std::collections::HashMap;
 /// and method for forwarding keys to the parent widgets key map. 
 pub trait Layout: Widget {
     fn align_elems(&mut self);
-    fn get_buttons(&self) -> Vec<&RefCell<Box<Button>>>;
+    fn get_buttons(&self) -> Vec<&Box<Button>>;
+    fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button>>;
 }
 
 

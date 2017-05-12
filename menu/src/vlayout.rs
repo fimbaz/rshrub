@@ -1,8 +1,6 @@
 use rustty::{Size, Pos, HasSize, HasPosition};
 use rustty::{Cell,CellAccessor};
 use std::boxed::Box;
-use std::borrow::{BorrowMut,Borrow};
-use std::cell::RefCell;
 use std::collections::HashMap;
 use rustty::ui::core::{
     Alignable, 
@@ -19,7 +17,7 @@ pub struct VerticalLayout {
     pub frame: Frame,
     inner_margin: usize,
     origin: Pos,
-    widgets: Vec<RefCell<Box<Button>>>,
+    widgets: Vec<Box<Button>>,
 }
 
 impl VerticalLayout {
@@ -31,9 +29,10 @@ impl VerticalLayout {
             frame: Frame::new(width, height),
             inner_margin: inner_margin,
             origin: first_origin,
-            widgets: widgets.into_iter().map(|x|RefCell::new(x)).collect()
+            widgets: widgets
         }
     }
+
 
 }
 
@@ -55,7 +54,7 @@ impl Widget for VerticalLayout {
         self.frame.clear(Cell::with_char(' '));
         self.frame.resize(new_size);
         for widget in &mut self.widgets{
-            widget.get_mut().frame_mut().draw_into(&mut self.frame);
+            widget.frame_mut().draw_into(&mut self.frame);
         }
     }
 
@@ -73,14 +72,18 @@ impl Layout for VerticalLayout {
         let (x, y) = self.origin;
         let mut current_y = y;
         for widget in self.widgets.iter_mut() {
-            widget.get_mut().frame_mut().set_origin((x, current_y));
+            widget.frame_mut().set_origin((x, current_y));
             current_y += 1 + self.inner_margin;
         }
         for w in self.widgets.iter() {
-            w.borrow_mut().frame().draw_into(&mut self.frame);
+            w.frame().draw_into(&mut self.frame);
         }
     }
-    fn get_buttons(&self) -> Vec<&RefCell<Box<Button>>> {
+    fn get_buttons(&self) -> Vec<&Box<Button>> {
         self.widgets.iter().collect()
     }
+    fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button>> {
+        self.widgets.iter_mut().collect()
+    }
+
 }

@@ -1,11 +1,9 @@
 extern crate rustty;
-mod menu;
 mod button;
 mod layout;
 mod vlayout;
 mod dialog;
 use std::borrow::BorrowMut;
-use menu::Menu;
 use rustty::{Terminal,Event,HasSize,Cell,Color,Attr};
 use rustty::ui::core::{
     Widget,
