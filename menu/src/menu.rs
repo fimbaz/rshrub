@@ -2,20 +2,19 @@ use std::collections::HashMap;
 use std::boxed::Box;
 
 use rustty::{Size, HasSize,Cell,CellAccessor};
-use rustty::ui::{VerticalLayout,Label};
+use rustty::ui::{Label};
 use rustty::ui::core::{
     Alignable,
     HorizontalAlign,
     VerticalAlign,
     Widget,
     Frame,
-    Button,
-    ButtonResult,
-    Layout,
     Painter,
 
 };
-
+use button::{ButtonResult,Button};
+use layout::{Layout};
+use vlayout::{VerticalLayout};
 enum MenuEvent{
     Quit,
     Up,
@@ -54,11 +53,6 @@ impl Menu{
 impl Layout for Menu{
     fn align_elems(&mut self){
         self.layout.align_elems();
-    }
-    fn forward_keys(&mut self,key_map: &mut HashMap<char,ButtonResult>){
-        if self.has_focus{
-            self.layout.forward_keys(key_map);
-        }
     }
 }
 
