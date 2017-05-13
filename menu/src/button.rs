@@ -3,7 +3,7 @@ use rustty::{Size,HasSize,CellAccessor,Cell,Attr,Color};
 use rustty::ui::core::{Painter,Frame,Alignable};
 //TODO: rename ButtonResult to UIEvent.
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone,Copy)]
 pub enum ButtonResult {
     Quit,
     Left,
@@ -11,26 +11,29 @@ pub enum ButtonResult {
     Up,
     Down,
     KeyPress(char),
+    Jeepers
 }
 
-pub trait Button: Widget {
-    //only return None if we've consumed the event.
-    fn result(&self,c: ButtonResult) -> Option<ButtonResult>;
-    fn set_focus(&mut self,) { }
+pub trait Focusable: Widget{
     fn unset_focus(&mut self,) { }
     fn get_focus(& self) -> bool { false }
-    fn accel(&self) -> char;
+    fn set_focus(&mut self,) { }    
+}
+pub trait Button: Focusable + BasicButton {}
+pub trait BasicButton: Widget + Focusable {
+    fn result(&self,c: ButtonResult) -> ButtonResult;
+    fn accel(&self) -> ButtonResult;
     
 }
 pub struct StdButton{
     frame: Frame,
     result: ButtonResult,
     focus: bool,
-    accel: char,
+    accel: ButtonResult,
     text: String
 }
 impl StdButton{
-    pub fn new(text: &str, accel: char, result: ButtonResult) -> StdButton{
+    pub fn new(text: &str, accel: ButtonResult, result: ButtonResult) -> StdButton{
         let s = format!("[{}]",text);
         let width=s.chars().count();
         let mut button = StdButton { frame: Frame::new(width,1),
@@ -43,15 +46,8 @@ impl StdButton{
     }
 
 }
-impl Button for StdButton{
-    fn result(&self,event: ButtonResult) -> Option<ButtonResult>{
-        if let  ButtonResult::KeyPress(c) = event{
-            if c == self.accel{
-                return Some(self.result);
-            }
-        }
-        return None
-    }
+
+impl Focusable for StdButton{
     fn set_focus(&mut self){
         self.frame.set_style(Color::Default,Color::Default,Attr::Reverse);
         self.focus = true;
@@ -64,12 +60,21 @@ impl Button for StdButton{
     fn get_focus(&self)-> bool{
         return self.focus;
     }
-    fn accel(&self) -> char{
+}
+impl BasicButton for StdButton{
+    fn result(&self,event: ButtonResult) -> ButtonResult{
+        if event == self.accel{
+            return  self.result;
+        }
+        event
+    }
+    fn accel(&self) -> ButtonResult{
         return self.accel;
     }
     
 
 }
+impl Button for StdButton{}
 
 impl Widget for StdButton {
     fn draw(&mut self, parent: &mut CellAccessor) {

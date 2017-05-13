@@ -29,18 +29,24 @@ fn main(){
 //    label1.align_text(HorizontalAlign::Middle,VerticalAlign::Top,(1,1));
     //    label1.pack(&dialog,HorizontalAlign::Middle,VerticalAlign::Top,(1,1));
     //    dialog.add_label(label1);
-    let mut quitbutton = StdButton::new("Quit",'q',ButtonResult::Quit);
-    let mut cont = StdButton::new("Continue",'j',ButtonResult::Quit);
-    let mut special = StdButton::new("Go Back In Time and Kill Hitler's Grandmother",'j',ButtonResult::Quit);
+    let mut quitbutton = StdButton::new("Quit",ButtonResult::KeyPress('q'),ButtonResult::Quit);
+    let mut cont = StdButton::new("Continue",ButtonResult::KeyPress('j'),ButtonResult::Quit);
+    let mut special = StdButton::new("Go Back In Time and Kill Hitler's Grandmother",ButtonResult::KeyPress('n'),ButtonResult::Quit);
     let mut layout = VerticalLayout::from_vec(vec![Box::new(quitbutton),Box::new(cont),Box::new(special)],0);
 //    layout.down();
     dialog.add_layout(layout);
     
     'main:  loop{
         while let Some(Event::Key(ch)) = term.get_event(10).unwrap(){
-            match ch{
-                'w' => dialog.layouts.get_mut(0).unwrap().up(),
-                's' => dialog.layouts.get_mut(0).unwrap().down(),
+            let event = match ch{
+                's' => ButtonResult::Down,
+                'w' => ButtonResult::Up,
+                _ => ButtonResult::KeyPress(ch)
+            };
+            match dialog.result_for_key(event){
+                ButtonResult::Up => dialog.layouts.get_mut(0).unwrap().up(),
+                ButtonResult::Down => dialog.layouts.get_mut(0).unwrap().down(),
+                ButtonResult::Quit => {break 'main;}
                 _ => {}
                     
             }

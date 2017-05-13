@@ -8,6 +8,7 @@ use ui::core::{HorizontalAlign,VerticalAlign};
 /// because this process is the same for all widgets. Every
 /// widget should contain one `Frame` type to be used to render
 /// text to the screen
+#[derive(Clone,Debug)]
 pub struct Frame  {
     origin: Pos,
     size: Size,

@@ -1,5 +1,5 @@
 use rustty::{Size, Pos, HasSize, HasPosition};
-use rustty::{Cell,CellAccessor};
+use rustty::{Cell,CellAccessor,Color,Attr};
 use std::boxed::Box;
 use std::collections::HashMap;
 use rustty::ui::core::{
@@ -9,19 +9,19 @@ use rustty::ui::core::{
     Widget, 
     Frame, 
     Painter,
-
 };
 use layout::Layout;
-use button::{StdButton,Button,ButtonResult};
+use button::{StdButton,Button,ButtonResult,Focusable};
 pub struct VerticalLayout {
     pub frame: Frame,
     inner_margin: usize,
     origin: Pos,
     widgets: Vec<Box<Button>>,
+    focus: bool
 }
 
 impl VerticalLayout {
-    pub fn from_vec(widgets: Vec<Box<Button>>, inner_margin: usize) -> VerticalLayout {
+    pub fn from_vec(widgets: Vec<Box<Button>>, mut inner_margin: usize) -> VerticalLayout {
         let first_origin = widgets.first().unwrap().frame().origin();
         let height = widgets.len() + widgets.len() * inner_margin;
         let width = widgets.iter().map(|s| s.frame().size().0).max().unwrap();
@@ -30,9 +30,10 @@ impl VerticalLayout {
             inner_margin: inner_margin,
             origin: first_origin,
             widgets: widgets,
+            focus: false,
         }
     }
-    fn get_focused(&self) -> Option<&Box<Button>>{
+    fn get_inner_focus(&self) -> Option<&Box<Button>>{
         for button in &self.widgets{
             if button.get_focus(){
                 return Some(button);
@@ -57,8 +58,15 @@ impl VerticalLayout {
 }
 
 impl Widget for VerticalLayout {
-    fn draw(&mut self, parent: &mut CellAccessor) { 
-        self.frame.draw_into(parent);
+    fn draw(&mut self, parent: &mut CellAccessor) {
+        if self.get_focus() {
+            let mut new_frame = self.frame.clone();
+            new_frame.draw_box();
+            new_frame.draw_into(parent)
+        }
+        else{
+            self.frame.draw_into(parent);
+        }
     }
 
     fn pack(&mut self, parent: &HasSize, halign: HorizontalAlign, valign: VerticalAlign,
@@ -115,13 +123,29 @@ impl Layout for VerticalLayout {
         self.set_inner_focus(i);
         self.redraw();
     }
+    fn result_for_key(&self,result:ButtonResult) -> ButtonResult{
+        if let Some( button) = self.widgets.iter().find(|b|b.result(result) != result){
+            return button.result(result);
+        }else{
+            return result;
+        }
+        
+        
+            
+    }
 
 }
-/*
-impl Button for VerticalLayout{
-    fn result(&self,result: ButtonResult) -> Option<ButtonResult>{
-        if let ButtonEvent::KeyPress(c) = result{
-        }
+
+impl Focusable for VerticalLayout{
+    fn set_focus(&mut self){
+        self.focus = true;
+    }
+    fn unset_focus(&mut self){
+        self.frame.set_style(Color::Default,Color::Default,Attr::Default);
+        self.focus = false;
+    }
+
+    fn get_focus(&self)-> bool{
+        return self.focus;
     }
 }
-*/

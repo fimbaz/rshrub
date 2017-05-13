@@ -45,28 +45,21 @@ impl Dialog {
         label.draw(&mut self.frame);
     }
 
-    pub fn get_focused(&self) -> Option<&Box<Button>>{
+    pub fn get_focused(&self) -> Option<&Box<Layout>>{
         for layout in &self.layouts{
-            for button in layout.get_buttons(){
-                if button.get_focus(){
-                    return Some(button)
-                }
+            if layout.get_focus(){
+                return Some(layout)
             }
         }
         None
     }
 
-    pub fn result_for_key(&self, key: char) -> Option<ButtonResult> {
-        let mut maybe_result: Option<ButtonResult> = None;
-        for layout in &self.layouts{
-            for button in layout.get_buttons(){
-                match button.result(ButtonResult::KeyPress(key)){
-                    Some(result) => {return Some(result); }
-                    None => {continue; }
-                }
-            }
+    pub fn result_for_key(&self, result: ButtonResult) -> ButtonResult {
+        if let Some(layout) = self.layouts.iter().find(|l|l.result_for_key(result) != result){
+            layout.result_for_key(result)
+        }else{
+            result
         }
-        None
     }
 }
 
