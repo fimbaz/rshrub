@@ -96,16 +96,6 @@ struct NeighborQuery<'t,P: HasPos + GridCell + 't>{
         
 }
 
-impl <'t,P: HasPos + GridCell> NeighborQuery<'t,P>{
-    pub fn neighbor_query(grid:&'t Grid<P>,query:&'t Region) -> NeighborQuery<'t,P>{
-        let mut main_iter = grid.map.iter();
-        let mut bucket_iter = (&[]).iter();
-        if let Some((key,bucket_vec)) = main_iter.next(){
-            bucket_iter = bucket_vec.iter()
-        }
-        NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood2::new(grid),bucket:  bucket_iter,region: Region::square(0,0,0)}
-    }
-}
 impl<'t,P: HasPos + GridCell>  NeighborQuery<'t,P>{
     //returns a value that continues the iter borrow, so
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
