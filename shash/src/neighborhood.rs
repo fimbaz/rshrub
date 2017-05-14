@@ -28,64 +28,61 @@ pub enum Neighbor<'t,P: HasPos + 't> {
 }
 
 #[derive(Debug)]
-pub struct  Neighborhood2<'t,P: HasPos + 't>(
-    Box<[Option<&'t P>]>,
-    Box<[Option<&'t P>]>
-);
+pub struct  Neighborhood2<'t,P: HasPos + 't>{
+    neighbors: Box<[Option<&'t P>]>,
+    grid: &'t Grid<P>,
+}
 
 impl <'t,P: HasPos +'t>  Neighborhood2<'t,P>{
-    pub fn new() -> Neighborhood2<'t,P> {
-        Neighborhood2(vec![None,None,None,None,None,None,None,None,None].into_boxed_slice(),vec![None,None,None,None,None,None,None,None,None].into_boxed_slice())
+    pub fn new(grid: &'t Grid<P>) -> Neighborhood2<'t,P> {
+        Neighborhood2{neighbors:vec![None,None,None,None,None,None,None,None,None].into_boxed_slice(),grid: grid}
     }
     pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<&P>{
-        *self.0.get(nbor as usize).unwrap()
-    }
-    pub fn default () -> Neighborhood2<'t,P>{
-        Neighborhood2::new()
+        *self.neighbors.get(nbor as usize).unwrap()
     }
     pub fn len(&self) -> usize {
-        self.0.iter().fold(0,|i,x|if let &Some(f) = x {i+1} else {i})
+        self.neighbors.iter().fold(0,|i,x|if let &Some(f) = x {i+1} else {i})
     }
 
     pub fn populate<'r,'s>(&'s mut self,point: &'r P, iter:&'r mut Iterator<Item=&'t P>){
         let p = point.get_pos();
-        for n in self.0.iter_mut(){
+        for n in self.neighbors.iter_mut(){
             *n = None;
         }
         for neighbor in iter{
             match neighbor.get_pos() {
                 //Point
-                n if n.x == p.x && n.y == p.y => {  *self.0.get_mut(0).unwrap() = Some(neighbor); }
+                n if n.x == p.x && n.y == p.y => {  *self.neighbors.get_mut(0).unwrap() = Some(neighbor); }
                 
                 //Top Left
                 n if p.x.checked_sub(1).is_some() && p.y.checked_sub(1).is_some() &&
-                    n.x == p.x-1 && n.y == p.y-1 => {*self.0.get_mut(1).unwrap() = Some(neighbor);} 
+                    n.x == p.x-1 && n.y == p.y-1 => {*self.neighbors.get_mut(1).unwrap() = Some(neighbor);} 
                 //Top
                 n if p.y.checked_sub(1).is_some() &&
-                    n.x == p.x && n.y == p.y-1 => {*self.0.get_mut(2).unwrap() = Some(neighbor); }
+                    n.x == p.x && n.y == p.y-1 => {*self.neighbors.get_mut(2).unwrap() = Some(neighbor); }
                 
                 //Top Right
                 n if p.x.checked_add(1).is_some() && p.y.checked_sub(1).is_some() &&
-                    n.x == p.x+1 && n.y == p.y-1 => {*self.0.get_mut(3).unwrap() = Some(neighbor); }
+                    n.x == p.x+1 && n.y == p.y-1 => {*self.neighbors.get_mut(3).unwrap() = Some(neighbor); }
                 
                 //Right                
                 n if p.x.checked_add(1).is_some() &&
-                    n.x == p.x+1 && n.y == p.y => { *self.0.get_mut(4).unwrap() = Some(neighbor); }
+                    n.x == p.x+1 && n.y == p.y => { *self.neighbors.get_mut(4).unwrap() = Some(neighbor); }
                 
                 //Bottom Right
                 n if p.x.checked_add(1).is_some() &&  p.y.checked_add(1).is_some() &&
-                    n.x == p.x+1 && n.y == p.y + 1 => {*self.0.get_mut(5).unwrap() = Some(neighbor); }
+                    n.x == p.x+1 && n.y == p.y + 1 => {*self.neighbors.get_mut(5).unwrap() = Some(neighbor); }
 
                 //Bottom
                 n if p.y.checked_add(1).is_some() &&
-                    n.x == p.x && n.y == p.y + 1 => {*self.0.get_mut(6).unwrap() = Some(neighbor); }
+                    n.x == p.x && n.y == p.y + 1 => {*self.neighbors.get_mut(6).unwrap() = Some(neighbor); }
                 
                 //Bottom Left
                 n if p.x.checked_sub(1).is_some() &&  p.y.checked_add(1).is_some() &&
-                    n.x == p.x-1 && n.y == p.y+1 => {*self.0.get_mut(7).unwrap() = Some(neighbor); }
+                    n.x == p.x-1 && n.y == p.y+1 => {*self.neighbors.get_mut(7).unwrap() = Some(neighbor); }
                 //Left
                 n if p.x.checked_sub(1).is_some() &&
-                    n.x == p.x-1 && n.y == p.y => {*self.0.get_mut(8).unwrap() = Some(neighbor); }
+                    n.x == p.x-1 && n.y == p.y => {*self.neighbors.get_mut(8).unwrap() = Some(neighbor); }
                 
                 _ => {}
             }

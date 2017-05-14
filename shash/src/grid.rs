@@ -7,6 +7,7 @@ use neighborhood::Neighborhood2;
 pub trait GridCell {
     fn  merge(&self,Self);
 }
+#[derive(Debug)]
 pub struct Grid<P: HasPos> {
     pub map: FnvHashMap<BucketPos,Vec<P>>
 }
@@ -53,7 +54,7 @@ impl <P: HasPos + GridCell> Grid<P>{
         if let Some((key,bucket_vec)) = main_iter.next(){
             bucket_iter = bucket_vec.iter()
         }
-        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood2::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
+        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood2::new(self),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
 impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
@@ -95,7 +96,7 @@ impl <'t,P: HasPos + GridCell> NeighborQuery<'t,P>{
         if let Some((key,bucket_vec)) = main_iter.next(){
             bucket_iter = bucket_vec.iter()
         }
-        NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood2::default(),bucket:  bucket_iter,region: Region::square(0,0,0)}
+        NeighborQuery { grid:grid, main_iter:main_iter,nhood: Neighborhood2::new(grid),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
 impl<'t,P: HasPos + GridCell>  NeighborQuery<'t,P>{
