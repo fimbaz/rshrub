@@ -77,7 +77,7 @@ mod tests {
     #[cfg(feature="bench")]
     #[bench]
     fn rq_neighquery(b: &mut Bencher){
-        let mut grid = Grid::new(30);
+        let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
@@ -103,7 +103,7 @@ mod tests {
     #[cfg(feature="bench")]
     #[bench]
     fn rq_neighquery2(b: &mut Bencher){
-        let mut grid = Grid::new(30);
+        let mut grid = Grid::new();
         for i in (0..1000000){
             for j in (0..10000){
                 if i % 100 != 0 || j%100 !=0 {
@@ -134,7 +134,7 @@ mod tests {
     #[cfg(feature="bench")]
     #[bench]
     fn rq_bigquery(b: &mut Bencher){
-        let mut grid = Grid::new(30);
+        let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
@@ -166,7 +166,7 @@ mod tests {
     }
     #[test]
     fn test_rq2(){
-        let mut grid = Grid::new(30);
+        let mut grid = Grid::new();
         for i in (0..100){
             for j in (0..100){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
@@ -180,7 +180,7 @@ mod tests {
     }
     #[test]
     fn test_rq(){
-        let mut grid = Grid::new(30);
+        let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
                 let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);

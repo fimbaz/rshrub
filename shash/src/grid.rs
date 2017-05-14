@@ -9,7 +9,7 @@ pub trait GridCell {
 }
 #[derive(Debug)]
 pub struct Grid<P: HasPos> {
-    pub map: FnvHashMap<BucketPos,Vec<P>>
+    pub map: FnvHashMap<BucketPos,Vec<P>>,
 }
 
 pub struct RangeQuery<'t,'r,P: HasPos + 't>{
@@ -24,10 +24,13 @@ impl <P: HasPos + GridCell> Grid<P>{
     }
     pub fn insert(&mut self,point: P){
         let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(vec![]);
-        if let Some(ref existing_point) = bucket.iter().find(|x|x.get_pos()==point.get_pos()){
+        if let Some(pos_in_bucket) =  bucket.iter().position(|x|x.get_pos()==point.get_pos()){
+            let mut existing_point = bucket.get(pos_in_bucket).unwrap();
             existing_point.merge(point);
+        }else{
+            bucket.push(point);
         }
-            
+        
     }
     //TODO remove internal calls and save a hash.
     pub fn translate(&mut self,old_pos: Pos,new_pos: Pos){
