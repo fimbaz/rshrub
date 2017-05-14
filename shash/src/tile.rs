@@ -17,6 +17,8 @@ pub enum Substrate{
     Dirt(),
     Space(),
 }
+
+
 #[derive(Debug,Copy,Clone)]
 pub struct Resources{
     pub water: f32,

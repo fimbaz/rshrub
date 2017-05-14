@@ -17,20 +17,20 @@ use vlayout::VerticalLayout;
 use button::{ButtonResult,Button,StdButton};
 use rustty::ui::Label;
 
-pub struct Dialog {
+pub struct Dialog<T> {
     frame: Frame,
-    pub layouts: Vec<Box<Layout>>,
+    pub layouts: Vec<Box<Layout<T>>>,
 }
 
 
-impl Dialog {
-    pub fn new(cols: usize, rows: usize) -> Dialog {
+impl <T: PartialEq + Copy> Dialog<T> {
+    pub fn new(cols: usize, rows: usize) -> Dialog<T> {
         Dialog {
             frame: Frame::new(cols, rows),
             layouts: Vec::new(),
         }
     }
-    pub fn add_layout<T: Layout + 'static>(&mut self, mut layout: T) {
+    pub fn add_layout<R: Layout<T> + 'static>(&mut self, mut layout: R) {
         if self.get_focused().is_none(){
             if let Some(button) =  layout.get_buttons_mut().get_mut(0){
                 button.set_focus();
@@ -45,7 +45,7 @@ impl Dialog {
         label.draw(&mut self.frame);
     }
 
-    pub fn get_focused(&self) -> Option<&Box<Layout>>{
+    pub fn get_focused(&self) -> Option<&Box<Layout<T>>>{
         for layout in &self.layouts{
             if layout.get_focus(){
                 return Some(layout)
@@ -54,7 +54,7 @@ impl Dialog {
         None
     }
 
-    pub fn result_for_key(&self, result: ButtonResult) -> ButtonResult {
+    pub fn result_for_key(&self, result: ButtonResult<T>) -> ButtonResult<T> {
         if let Some(layout) = self.layouts.iter().find(|l|l.result_for_key(result) != result){
             layout.result_for_key(result)
         }else{
@@ -63,7 +63,7 @@ impl Dialog {
     }
 }
 
-impl Widget for Dialog {
+impl  <T> Widget for Dialog<T> {
     fn draw(&mut self, parent: &mut CellAccessor) {
         self.frame.draw_into(parent);
     }
@@ -95,7 +95,7 @@ fn resize(&mut self, new_size: Size) {
     }
 }
 
-impl HasSize for Dialog {
+impl <T> HasSize for Dialog<T>{
     fn size(&self) -> Size {
         self.frame.size()
     }

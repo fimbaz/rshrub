@@ -4,14 +4,14 @@ use rustty::ui::core::{Painter,Frame,Alignable};
 //TODO: rename ButtonResult to UIEvent.
 
 #[derive(PartialEq, Clone,Copy)]
-pub enum ButtonResult {
+pub enum ButtonResult<T: PartialEq + Copy> {
     Quit,
     Left,
     Right,
     Up,
     Down,
     KeyPress(char),
-    Jeepers
+    Event(T)
 }
 
 pub trait Focusable: Widget{
@@ -19,21 +19,21 @@ pub trait Focusable: Widget{
     fn get_focus(& self) -> bool { false }
     fn set_focus(&mut self,) { }    
 }
-pub trait Button: Focusable + BasicButton {}
-pub trait BasicButton: Widget + Focusable {
-    fn result(&self,c: ButtonResult) -> ButtonResult;
-    fn accel(&self) -> ButtonResult;
+pub trait Button<T: PartialEq + Copy>: Focusable + BasicButton<T> {}
+pub trait BasicButton<T: PartialEq + Copy>: Widget + Focusable {
+    fn result(&self,c: ButtonResult<T>) -> ButtonResult<T>;
+    fn accel(&self) -> ButtonResult<T>;
     
 }
-pub struct StdButton{
+pub struct StdButton<T: PartialEq + Copy>{
     frame: Frame,
-    result: ButtonResult,
+    result: ButtonResult<T>,
     focus: bool,
-    accel: ButtonResult,
+    accel: ButtonResult<T>,
     text: String
 }
-impl StdButton{
-    pub fn new(text: &str, accel: ButtonResult, result: ButtonResult) -> StdButton{
+impl <T: PartialEq + Copy> StdButton<T>{
+    pub fn new(text: &str, accel: ButtonResult<T>, result: ButtonResult<T>) -> StdButton<T>{
         let s = format!("[{}]",text);
         let width=s.chars().count();
         let mut button = StdButton { frame: Frame::new(width,1),
@@ -47,7 +47,7 @@ impl StdButton{
 
 }
 
-impl Focusable for StdButton{
+impl <T: PartialEq + Copy> Focusable for StdButton<T>{
     fn set_focus(&mut self){
         self.frame.set_style(Color::Default,Color::Default,Attr::Reverse);
         self.focus = true;
@@ -61,22 +61,22 @@ impl Focusable for StdButton{
         return self.focus;
     }
 }
-impl BasicButton for StdButton{
-    fn result(&self,event: ButtonResult) -> ButtonResult{
+impl <T: PartialEq + Copy> BasicButton<T> for StdButton<T>{
+    fn result(&self,event: ButtonResult<T>) -> ButtonResult<T>{
         if event == self.accel{
             return  self.result;
         }
         event
     }
-    fn accel(&self) -> ButtonResult{
+    fn accel(&self) -> ButtonResult<T>{
         return self.accel;
     }
     
 
 }
-impl Button for StdButton{}
+impl <T: PartialEq + Copy> Button<T> for StdButton<T>{}
 
-impl Widget for StdButton {
+impl <T: PartialEq + Copy> Widget for StdButton<T> {
     fn draw(&mut self, parent: &mut CellAccessor) {
         self.frame.draw_into(parent);
     }

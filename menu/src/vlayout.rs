@@ -12,16 +12,16 @@ use rustty::ui::core::{
 };
 use layout::Layout;
 use button::{StdButton,Button,ButtonResult,Focusable};
-pub struct VerticalLayout {
+pub struct VerticalLayout<T: PartialEq + Copy> {
     pub frame: Frame,
     inner_margin: usize,
     origin: Pos,
-    widgets: Vec<Box<Button>>,
+    widgets: Vec<Box<Button<T>>>,
     focus: bool
 }
 
-impl VerticalLayout {
-    pub fn from_vec(widgets: Vec<Box<Button>>, mut inner_margin: usize) -> VerticalLayout {
+impl <T: PartialEq + Copy> VerticalLayout<T> {
+    pub fn from_vec(widgets: Vec<Box<Button<T>>>, mut inner_margin: usize) -> VerticalLayout<T> {
         let first_origin = widgets.first().unwrap().frame().origin();
         let height = widgets.len() + widgets.len() * inner_margin;
         let width = widgets.iter().map(|s| s.frame().size().0).max().unwrap();
@@ -33,7 +33,7 @@ impl VerticalLayout {
             focus: false,
         }
     }
-    fn get_inner_focus(&self) -> Option<&Box<Button>>{
+    fn get_inner_focus(&self) -> Option<&Box<Button<T>>>{
         for button in &self.widgets{
             if button.get_focus(){
                 return Some(button);
@@ -57,7 +57,7 @@ impl VerticalLayout {
     }
 }
 
-impl Widget for VerticalLayout {
+impl <T: PartialEq + Copy> Widget for VerticalLayout<T> {
     fn draw(&mut self, parent: &mut CellAccessor) {
         if self.get_focus() {
             let mut new_frame = self.frame.clone();
@@ -95,7 +95,7 @@ impl Widget for VerticalLayout {
     }
 }
 
-impl Layout for VerticalLayout {
+impl <T: PartialEq + Copy> Layout<T> for VerticalLayout<T> {
     fn align_elems(&mut self) {
         let (x, y) = self.origin;
         let mut current_y = y;
@@ -107,10 +107,10 @@ impl Layout for VerticalLayout {
             w.frame().draw_into(&mut self.frame);
         }
     }
-    fn get_buttons(&self) -> Vec<&Box<Button>> {
+    fn get_buttons(&self) -> Vec<&Box<Button<T>>> {
         self.widgets.iter().collect()
     }
-    fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button>> {
+    fn get_buttons_mut(&mut self) -> Vec<&mut Box<Button<T>>> {
         self.widgets.iter_mut().collect()
     }
     fn down(&mut self){
@@ -123,7 +123,7 @@ impl Layout for VerticalLayout {
         self.set_inner_focus(i);
         self.redraw();
     }
-    fn result_for_key(&self,result:ButtonResult) -> ButtonResult{
+    fn result_for_key(&self,result:ButtonResult<T>) -> ButtonResult<T>{
         if let Some( button) = self.widgets.iter().find(|b|b.result(result) != result){
             return button.result(result);
         }else{
@@ -136,7 +136,7 @@ impl Layout for VerticalLayout {
 
 }
 
-impl Focusable for VerticalLayout{
+impl <T: PartialEq + Copy> Focusable for VerticalLayout<T>{
     fn set_focus(&mut self){
         self.focus = true;
     }
