@@ -1,8 +1,7 @@
 use std::hash::{Hash,Hasher};
 
-use std::collections::hash_map::{Entry};
+use std::collections::hash_map;
 
-pub const MAX_RECT_SIZE: usize = 16384;
 pub const RECT_BUCKET_SIZE: usize = 4;
 impl Eq for Pos {}
 impl Eq for BucketPos {}
@@ -34,7 +33,7 @@ impl HasPos for BucketPos {
     fn get_pos(&self) -> Pos {
         return self.0;
     }
-    fn set_pos(&mut self,x: usize, y: usize){
+    fn set_pos(&mut self,_: usize, _: usize){
         unreachable!();
     }
 }
@@ -67,7 +66,9 @@ impl PartialEq for BucketPos{
         !self.eq(other)
     }
 }
+
 impl Pos {
+    #[allow(dead_code)]
      pub fn new(x: usize,y:usize) -> Pos{
      	 Pos{x: x,y: y}
      }
@@ -78,6 +79,7 @@ impl BucketPos {
      }
 }
 
+#[allow(dead_code)]
 pub struct Iter<'t> {
     region: &'t Region,
     pos: BucketPos,

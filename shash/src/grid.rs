@@ -8,7 +8,6 @@ pub trait GridCell {
     fn  merge(&self,Self);
 }
 pub struct Grid<P: HasPos> {
-    pub ground_level: usize,
     pub map: FnvHashMap<BucketPos,Vec<P>>
 }
 
@@ -19,8 +18,8 @@ pub struct RangeQuery<'t,'r,P: HasPos + 't>{
     points: slice::Iter<'t,P>
 }
 impl <P: HasPos + GridCell> Grid<P>{
-    pub fn new(ground_level: usize) -> Grid<P>{
-        return Grid {map: FnvHashMap::default(),ground_level: ground_level};
+    pub fn new() -> Grid<P>{
+        return Grid {map: FnvHashMap::default()};
     }
     pub fn insert(&mut self,point: P){
         let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(vec![]);

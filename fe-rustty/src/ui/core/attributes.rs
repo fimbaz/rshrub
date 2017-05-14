@@ -1,18 +1,18 @@
-#[derive(Clone)]
+#[derive(Clone,Copy,Debug)]
 pub enum VerticalAlign {
     Top,
     Middle,
     Bottom,
 }
 
-#[derive(Clone)]
+#[derive(Clone,Copy,Debug)]
 pub enum HorizontalAlign {
     Left,
     Middle,
     Right,
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy,Debug)]
 pub enum ButtonResult {
     Ok,
     Cancel,

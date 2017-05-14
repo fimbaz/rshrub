@@ -56,7 +56,7 @@ impl StdButton {
     /// ```
     ///
     pub fn new(text: &str, accel: char, result: ButtonResult) -> StdButton {
-        let s = format!("< {} >", text);
+        let s = format!("[{}]", text);
         let width = s.chars().count();
         let mut button = 
             StdButton { frame: Frame::new(width, 1), 

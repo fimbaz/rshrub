@@ -8,12 +8,14 @@ use std::cell::RefCell;
 use neighborhood::Neighborhood;
 use tile::{Tile,TileHolder,Resources,Substrate};
 pub struct BoringGame {
-    pub grid: Grid<TileHolder>
+    pub grid: Grid<TileHolder>,
+    pub ground_level: usize,
+        
 }
 
 impl BoringGame{
     pub fn new_tile(&mut self,pos:Pos,water: f32, air: f32) -> Result<(),String>{
-        let substrate = if pos.y < self.grid.ground_level{
+        let substrate = if pos.y < self.ground_level{
             Substrate::Dirt()
         }
         else {
@@ -23,10 +25,10 @@ impl BoringGame{
     }
 
     pub fn new() -> BoringGame {
-        let mut grid = Grid::new(30);
-        let mut game= BoringGame { grid: grid };
-        for i in (0..100){
-            for j in (0..100) {
+        let mut grid = Grid::new();
+        let mut game= BoringGame { grid: grid, ground_level: 30 };
+        for i in 0..100 {
+            for j in 0..100 {
                 game.new_tile(Pos::new(i,j),1.0,0.0);
             }
         }
