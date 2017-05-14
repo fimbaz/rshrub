@@ -130,6 +130,24 @@ mod tests {
         b.iter(clj);
     }
 
+    #[cfg(feature="bench")]
+    #[bench]
+    fn rq_get_buckets(b: &mut Bencher){
+        let mut grid = Grid::new();
+        for i in (0..1000){
+            for j in (0..1000){
+                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
+                val.push(ToyPos::new(i,j));
+            }
+        }
+
+        let mut clj =|| {
+            test::black_box(grid.occupied_buckets());
+        };
+        println!("{:?}",clj());
+        b.iter(clj);
+    }
+    
     
     #[cfg(feature="bench")]
     #[bench]

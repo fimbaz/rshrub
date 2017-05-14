@@ -3,6 +3,7 @@ use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
+use std::cell::RefCell;
 use neighborhood::Neighborhood2;
 pub trait GridCell {
     fn  merge(&self,Self);
@@ -21,6 +22,9 @@ pub struct RangeQuery<'t,'r,P: HasPos + 't>{
 impl <P: HasPos + GridCell> Grid<P>{
     pub fn new() -> Grid<P>{
         return Grid {map: FnvHashMap::default()};
+    }
+    pub fn occupied_buckets(&self) -> Vec<BucketPos>{
+        self.map.keys().map(|x|x.clone()).collect()
     }
     pub fn insert(&mut self,point: P){
         let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(vec![]);
