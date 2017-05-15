@@ -21,7 +21,7 @@ pub struct RangeQuery<'t,'r,P: HasPos + 't>{
     bucket_keys: Iter<'r>,
     region: &'r  Region,
     map: &'t FnvHashMap<BucketPos,RefCell<Vec<Rc<P>>>>,
-    bucket_ref: Ref<'t,Vec<Rc<P>>>,
+    bucket_ref: Option<Ref<'t,Vec<Rc<P>>>>,
     cursor_pos: usize,
 }
 impl <P: HasPos + GridCell + Debug> Grid<P>{
@@ -33,14 +33,24 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     }
     pub fn insert(&mut self,point: P){
         let bucket: &mut RefCell<Vec<Rc<P>>> = self.map.entry(BucketPos::from(point.get_pos())).or_insert(RefCell::new(vec![]));
-        let val  = (*bucket).borrow();
-        if let Some(pos_in_bucket) =  val.iter().position(|x|x.get_pos()==point.get_pos()){
-            let bor = (*bucket).borrow();
-            let mut existing_point = bor.get(pos_in_bucket).unwrap();
-            existing_point.merge(point);
-        }else{
-            bucket.borrow_mut(). push(Rc::new(point));
+        let mut bucket_exists = false;
+        let mut pos_in_bucket = None;
+        {
+            let val  = (*bucket).borrow();
+            pos_in_bucket =  val.iter().position(|x|x.get_pos()==point.get_pos());
         }
+
+        if pos_in_bucket.is_some(){
+            let bor = (*bucket).borrow();
+            let mut existing_point = bor.get(pos_in_bucket.unwrap()).unwrap();
+            existing_point.merge(point);
+            
+        }else{
+            let mut bor = (*bucket).borrow_mut();
+            bor.push(Rc::new(point));
+        }
+
+
         
     }
     /*
@@ -63,9 +73,14 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
 */
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         let mut bucket_keys = region.iter();
-        let bucket_ref = self.map.get(&bucket_keys.next().unwrap()).unwrap().borrow();
-        RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:bucket_ref,cursor_pos:0}
+        
+        if let Some(bucket_ref) = self.map.get(&bucket_keys.next().unwrap()){
+            RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:Some(bucket_ref.borrow()),cursor_pos:0}
+        }else{
+            RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:None,cursor_pos:0}
+        }
     }
+    
     pub fn neighbor_query<'t,'r>(&'t self,query:&'r Region) -> NeighborQuery<'t,P>{
         let mut main_iter = self.map.iter();
         let mut bucket = main_iter.next().unwrap();
@@ -77,21 +92,23 @@ impl <'t,'r,P: HasPos + Debug> Iterator for  RangeQuery<'t,'r,P> {
     type Item = Rc<P>;
     fn next(&mut self) -> Option<Rc<P>> {
         'outer: loop{
-            while let Some(point) = self.bucket_ref.get(self.cursor_pos){
-                let pos = point.get_pos();
-                if self.region.contains(&pos){
-                    return Some(point.clone());
+            if let Some(ref bucket_ref) = self.bucket_ref{
+                while let Some(point) = bucket_ref.get(self.cursor_pos){
+                    let pos = point.get_pos();
+                    self.cursor_pos +=1;
+                    if self.region.contains(&pos){
+                        return Some(point.clone());
+                    }
                 }
-                self.cursor_pos +=1;
             }
             for bucket in &mut self.bucket_keys{
-                 if let Some(vec) = self.map.get(&bucket){
-                     self.bucket_ref = vec.borrow();
-                     self.cursor_pos = 0;
+                if let Some(vec) = self.map.get(&bucket){
+                    self.bucket_ref = Some(vec.borrow());
+                        self.cursor_pos = 0;
                 }
                 continue 'outer;
             }
-            break;
+            break 'outer;
         }
         None
     }
@@ -127,27 +144,12 @@ impl<'t,P: HasPos + GridCell + Debug>  NeighborQuery<'t,P>{
             if let Some((key,bucket_vec)) = self.main_iter.next(){
                 self.bucket = bucket_vec.borrow();
                 self.bucket_cursor = 0;
-                    
+
+                continue 'outer;                
             }else{
-                break;
+                break 'outer;
             }
         }
         None
     }
 }
-/*
-fn get_neighbors(map:&FnvHashMap<BucketPos,Vec<Pos>>,bpos: BucketPos) -> Vec<&Pos>{
-    let x = bpos.0.x;
-    let y = bpos.0.y;
-    let width = if x == 0 { 1 } else { 2 };
-    let height = if y == 0 { 1 } else { 2 };
-    let nhood = Region {x,y,width,height};
-    let npos = Pos { x, y };
-    for pos in vec![BucketPos::new(x,y),BucketPos::new(x+width,y),BucketPos::new(x,y+height),BucketPos::new(x+width,y+height)]{
-        if let Some(neighbors) = map.get(&pos){
-            return neighbors.iter().filter(|n|nhood.contains(*n)).collect()
-        }
-    }
-    
-}
-*/

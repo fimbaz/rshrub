@@ -17,7 +17,7 @@ mod tests {
     use grid::{Grid,RangeQuery};
     use rect::{BucketPos,Pos,Iter,Region,HasPos};
     use grid::GridCell;
-    #[derive(Debug)]
+    #[derive(Debug,Eq,PartialEq)]
     struct ToyPos ( Pos );
     impl HasPos for ToyPos {
         fn get_pos(&self) -> Pos{
@@ -28,6 +28,7 @@ mod tests {
         }
 
     }
+
     impl GridCell for ToyPos {
         fn merge(&self,point:ToyPos) {
         }
@@ -56,23 +57,6 @@ mod tests {
             println!("{:?}",pos);
         }
     }
-    #[cfg(feature="bench")]
-    #[bench]
-    fn bench_ins(b: &mut Bencher){
-        let mut map = FnvHashMap::default();
-        for i in (0..1000){
-            for j in (0..1000){
-                let val = map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
-            }
-        }
-        let clj =  (|| {
-            map.iter().fold(0,|i,x| {test::black_box(x); i+1})
-        });
-        println!("{:?}",clj());
-        b.iter(clj);
-    }
-
 
     #[cfg(feature="bench")]
     #[bench]
@@ -80,8 +64,8 @@ mod tests {
         let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                let val = grid.insert(ToyPos::new(i,j));
+
             }
         }
         let region = Region::square(0,0,0);
@@ -109,8 +93,7 @@ mod tests {
                 if i % 100 != 0 || j%100 !=0 {
                     continue
                 }
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                let val = grid.insert(ToyPos::new(i,j));
             }
         }
         let region = Region::square(0,0,0);
@@ -132,12 +115,38 @@ mod tests {
 
     #[cfg(feature="bench")]
     #[bench]
+    fn rq_neighquery3(b: &mut Bencher){
+        let mut grid = Grid::new();
+        for i in (0..100){
+            for j in (0..100){
+                let val = grid.insert(ToyPos::new(i,j));
+            }
+        }
+        println!("done inserting");
+        let region = Region::square(0,0,0);
+        let mut query = grid.neighbor_query(&region);
+
+        let mut clj =|| {
+            let mut query = grid.neighbor_query(&region);
+            let mut count =0;
+            {
+                while let Some(nbors) =query.nexties(){
+//                    count += nbors.len();
+                }
+            }
+            count
+        };
+        println!("{:?}",clj());
+        b.iter(clj);
+    }
+
+    #[cfg(feature="bench")]
+    #[bench]
     fn rq_get_buckets(b: &mut Bencher){
         let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                grid.insert(ToyPos::new(i,j));
             }
         }
 
@@ -155,20 +164,19 @@ mod tests {
         let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                let val = grid.insert(ToyPos::new(i,j));
             }
         }
         let mut ncount = 0;
         for val in grid.map.values(){
-            ncount += val.len()
+            ncount += val.borrow().len()
         }
         println!("{:?}",ncount);
         let clj = || {
             let mut count =0;
             let it = grid.map.iter();
             for item in it{
-                for point in item.1{
+                for point in item.1.borrow().iter(){
                     let pos = point.get_pos();
                     let x = pos.x; let y = pos.y;
                     let region = Region::rectangle((x as usize).saturating_sub(1),(y as usize).saturating_sub(1),
@@ -187,22 +195,20 @@ mod tests {
         let mut grid = Grid::new();
         for i in (0..100){
             for j in (0..100){
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                let val = grid.insert(ToyPos::new(i,j));
             }
         }
         let region = Region { x: 0, y: 5, width: 2, height: 2 };
         
-        let vec: Vec<&ToyPos> = grid.range_query(&region).collect();
-        println!("{:?}",vec);
+//        let vec: Vec<&ToyPos> = grid.range_query(&region).collect();
+//        println!("{:?}",vec);
     }
     #[test]
     fn test_rq(){
         let mut grid = Grid::new();
         for i in (0..1000){
             for j in (0..1000){
-                let val = grid.map.entry(BucketPos::new(i,j)).or_insert(vec![]);
-                val.push(ToyPos::new(i,j));
+                let val = grid.insert(ToyPos::new(i,j));
             }
         }
         let reg= Region { x: 0, y: 2, width: 2, height: 2 };
