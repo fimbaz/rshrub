@@ -4,20 +4,23 @@ use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
 use std::cell::RefCell;
+use std::cell::Ref;
 use neighborhood::Neighborhood2;
 pub trait GridCell {
     fn  merge(&self,Self);
 }
 #[derive(Debug)]
 pub struct Grid<P: HasPos> {
-    pub map: FnvHashMap<BucketPos,Vec<P>>,
+    pub map: FnvHashMap<BucketPos,RefCell<Vec<P>>>,
 }
 
 pub struct RangeQuery<'t,'r,P: HasPos + 't>{
+    
     bucket_keys: Iter<'r>,
     region: &'r  Region,
-    map: &'t FnvHashMap<BucketPos,Vec<P>>,
-    points: slice::Iter<'t,P>
+    map: &'t FnvHashMap<BucketPos,RefCell<Vec<P>>>,
+    bucket_ref: Ref<'t,Vec<P>>,
+    cursor_pos: usize,
 }
 impl <P: HasPos + GridCell> Grid<P>{
     pub fn new() -> Grid<P>{
@@ -27,12 +30,12 @@ impl <P: HasPos + GridCell> Grid<P>{
         self.map.keys().map(|x|x.clone()).collect()
     }
     pub fn insert(&mut self,point: P){
-        let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(vec![]);
-        if let Some(pos_in_bucket) =  bucket.iter().position(|x|x.get_pos()==point.get_pos()){
-            let mut existing_point = bucket.get(pos_in_bucket).unwrap();
+        let bucket = self.map.entry(BucketPos::from(point.get_pos())).or_insert(RefCell::new(vec![]));
+        if let Some(pos_in_bucket) =  bucket.borrow().iter().position(|x|x.get_pos()==point.get_pos()){
+            let mut existing_point = bucket.borrow().get(pos_in_bucket).unwrap();
             existing_point.merge(point);
         }else{
-            bucket.push(point);
+            bucket.borrow_mut(). push(point);
         }
         
     }
@@ -45,30 +48,33 @@ impl <P: HasPos + GridCell> Grid<P>{
     }
     pub fn delete(&mut self,pos: Pos) -> Option<P>{
         if let Some(bucket) = self.map.get_mut(&BucketPos::from(pos)){
-            if let Some(i) = bucket.iter().position(|x|x.get_pos()==pos){
-                let point = bucket.remove(i);
+            if let Some(i) = bucket.borrow().iter().position(|x|x.get_pos()==pos){
+                let point = bucket.borrow_mut().remove(i);
                 return Some(point);
             }
         }
         return None;
     }
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
-        RangeQuery{bucket_keys:region.iter(),map:&self.map,region:region,points: (&[]).iter()}
+        let bucket_keys = region.iter();
+        let bucket_ref = self.map.get(&bucket_keys.next().unwrap()).unwrap().borrow();
+        RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:bucket_ref,cursor_pos:0}
     }
     pub fn neighbor_query<'t,'r>(&'t self,query:&'r Region) -> NeighborQuery<'t,P>{
         let mut main_iter = self.map.iter();
         let mut bucket_iter = (&[]).iter();
         if let Some((key,bucket_vec)) = main_iter.next(){
-            bucket_iter = bucket_vec.iter()
+            bucket_iter = bucket_vec.borrow().iter()
         }
         NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood2::new(self),bucket:  bucket_iter,region: Region::square(0,0,0)}
     }
 }
+
 impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
     type Item = &'t P;
     fn next(&mut self) -> Option<&'t P> {
         'outer: loop{
-            for  ref point in &mut self.points {
+            while let Some(point) = self.bucket_ref.get(self.cursor_pos){
                 let pos = point.get_pos();
                 if self.region.contains(&pos){
                     return Some(point);
@@ -76,7 +82,7 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
             }
             for bucket in &mut self.bucket_keys{
                  if let Some(ref vec) = self.map.get(&bucket){
-                    self.points = vec.iter();
+                    self.bucket_ref = vec.borrow();
                 }
                 continue 'outer;
             }
@@ -89,7 +95,7 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
 
 struct NeighborQuery<'t,P: HasPos + GridCell + 't>{
     grid: &'t Grid<P>,
-    main_iter:  hash_map::Iter<'t,BucketPos,Vec<P>>,
+    main_iter:  hash_map::Iter<'t,BucketPos,RefCell<Vec<P>>>,
     bucket: slice::Iter<'t,P>,
     nhood: Neighborhood2<'t,P>,
     region: Region,
