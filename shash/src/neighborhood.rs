@@ -1,5 +1,6 @@
 use rect::{HasPos,Pos,BucketPos};
 use grid::Grid;
+use std::rc::Rc;
 use std::fmt::Debug;
 pub enum Neighbor2{
     Point = 0,    
@@ -30,7 +31,7 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 
 #[derive(Debug)]
 pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
-    neighbors: Box<[Option<&'t P>]>,
+    neighbors: Box<[Option<Rc<P>>]>,
     grid: &'t Grid<P>,
 }
 
@@ -38,14 +39,14 @@ impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
     pub fn new(grid: &'t Grid<P>) -> Neighborhood2<'t,P> {
         Neighborhood2{neighbors:vec![None,None,None,None,None,None,None,None,None].into_boxed_slice(),grid: grid}
     }
-    pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<&P>{
-        *self.neighbors.get(nbor as usize).unwrap()
+    pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<Rc<P>>{
+        self.neighbors.get(nbor as usize).unwrap().clone()
     }
     pub fn len(&self) -> usize {
-        self.neighbors.iter().fold(0,|i,x|if let &Some(f) = x {i+1} else {i})
+        self.neighbors.iter().fold(0,|i,x|if let &Some(ref f) = x {i+1} else {i})
     }
 
-    pub fn populate<'r,'s>(&'s mut self,point: &'r P, iter:&'r mut Iterator<Item=&'t P>){
+    pub fn populate<'r,'s>(&'s mut self,point: &'r P, iter:&'r mut Iterator<Item=Rc<P>>){
         let p = point.get_pos();
         for n in self.neighbors.iter_mut(){
             *n = None;
