@@ -31,13 +31,17 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 
 #[derive(Debug)]
 pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
-    neighbors: Box<[Option<Rc<P>>]>,
+    neighbors: &'t mut Box<[Option<Rc<P>>]>,
     grid: &'t Grid<P>,
 }
 
+impl  <'t,P: HasPos +'t + Debug>  Drop for  Neighborhood2<'t,P>{
+    fn drop(&mut self){
+    }
+}
 impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
-    pub fn new(grid: &'t Grid<P>) -> Neighborhood2<'t,P> {
-        Neighborhood2{neighbors:vec![None,None,None,None,None,None,None,None,None].into_boxed_slice(),grid: grid}
+    pub fn new(grid: &'t Grid<P>,neighborhood_vec: &'t mut Box<[Option<Rc<P>>]>) -> Neighborhood2<'t,P> {
+        Neighborhood2{neighbors:neighborhood_vec,grid: grid}
     }
     pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<Rc<P>>{
         self.neighbors.get(nbor as usize).unwrap().clone()

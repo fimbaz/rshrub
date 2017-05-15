@@ -83,7 +83,8 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     pub fn neighbor_query<'t,'r>(&'t self,query:&'r Region) -> NeighborQuery<'t,P>{
         let mut main_iter = self.map.iter();
         let mut bucket = main_iter.next().unwrap();
-        NeighborQuery { grid:self, main_iter:main_iter,nhood: Neighborhood2::new(self),bucket:bucket.1.borrow(),region: Region::square(0,0,0),bucket_cursor:0}
+        let mut neighbors = vec![None,None,None,None,None,None,None,None,None].into_boxed_slice();
+        NeighborQuery { neighbors: neighbors, grid:self, main_iter:main_iter,bucket:bucket.1.borrow(),region: Region::square(0,0,0),bucket_cursor:0}
     }
 }
 
@@ -119,7 +120,7 @@ struct NeighborQuery<'t,P: HasPos + GridCell + 't + Debug>{
     main_iter:  hash_map::Iter<'t,BucketPos,RefCell<Vec<Rc<P>>>>,
     bucket: Ref<'t,Vec<Rc<P>>>,
     bucket_cursor: usize,
-    nhood: Neighborhood2<'t,P>,
+    neighbors: Box<[Option<Rc<P>>]>, //so Neighborhood2 can Drop w/o realloc
     region: Region,
         
 }
@@ -129,16 +130,17 @@ impl<'t,P: HasPos + GridCell + Debug>  NeighborQuery<'t,P>{
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
     //is out of scope.  This is to save us allocating a vec every single time (since the points we're
     //accessing aren't contiguous in the heap)
-    pub fn nexties<'r,'s>(&'r mut self) -> Option<&'s Neighborhood2<'r,P>>{
+    pub fn nexties<'r>(&'r mut self) -> Option<Neighborhood2<'r,P>>{
         'outer: loop{
             while let Some(point) = self.bucket.get(self.bucket_cursor){
                 let pos = point.get_pos();
                 self.region = Region::rectangle(pos.x.saturating_sub(1),pos.y.saturating_sub(1),
                                                 if pos.x == 0 { 1 } else { 2 },if pos.y == 0 {1} else {2} );
                 let mut rq = self.grid.range_query(&self.region);
-                self.nhood.populate(&point,&mut rq);
+                let mut nhood = Neighborhood2::new(self.grid,&mut self.neighbors);
+                nhood.populate(&point,&mut rq);
                 self.bucket_cursor +=1;
-                return Some(&self.nhood);
+                return Some(nhood);
             }
             if let Some((key,bucket_vec)) = self.main_iter.next(){
                 self.bucket = bucket_vec.borrow();
