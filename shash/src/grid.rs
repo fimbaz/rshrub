@@ -5,24 +5,25 @@ use std::slice;
 use std::iter::Filter;
 use std::cell::RefCell;
 use std::cell::Ref;
+use std::rc::Rc;
+use std::fmt::Debug;
 use neighborhood::Neighborhood2;
 pub trait GridCell {
     fn  merge(&self,Self);
 }
 #[derive(Debug)]
-pub struct Grid<P: HasPos> {
-    pub map: FnvHashMap<BucketPos,RefCell<Vec<P>>>,
+pub struct Grid<P: HasPos + Debug> {
+    pub map: FnvHashMap<BucketPos,RefCell<Vec<Rc<P>>>>,
 }
 
 pub struct RangeQuery<'t,'r,P: HasPos + 't>{
-    
     bucket_keys: Iter<'r>,
     region: &'r  Region,
-    map: &'t FnvHashMap<BucketPos,RefCell<Vec<P>>>,
-    bucket_ref: Ref<'t,Vec<P>>,
+    map: &'t FnvHashMap<BucketPos,RefCell<Vec<Rc<P>>>>,
+    bucket_ref: Ref<'t,Vec<Rc<P>>>,
     cursor_pos: usize,
 }
-impl <P: HasPos + GridCell> Grid<P>{
+impl <P: HasPos + GridCell + Debug> Grid<P>{
     pub fn new() -> Grid<P>{
         return Grid {map: FnvHashMap::default()};
     }
@@ -35,7 +36,7 @@ impl <P: HasPos + GridCell> Grid<P>{
             let mut existing_point = bucket.borrow().get(pos_in_bucket).unwrap();
             existing_point.merge(point);
         }else{
-            bucket.borrow_mut(). push(point);
+            bucket.borrow_mut(). push(Rc::new(point));
         }
         
     }
@@ -43,10 +44,10 @@ impl <P: HasPos + GridCell> Grid<P>{
     pub fn translate(&mut self,old_pos: Pos,new_pos: Pos){
         if let Some(mut point) = self.delete(old_pos) {
             point.set_pos(new_pos.x,new_pos.y);
-            self.insert(point);
+            self.insert(Rc::try_unwrap(point).expect("must be between turns to modify vec"));
         }
     }
-    pub fn delete(&mut self,pos: Pos) -> Option<P>{
+    pub fn delete(&mut self,pos: Pos) -> Option<Rc<P>>{
         if let Some(bucket) = self.map.get_mut(&BucketPos::from(pos)){
             if let Some(i) = bucket.borrow().iter().position(|x|x.get_pos()==pos){
                 let point = bucket.borrow_mut().remove(i);
@@ -70,7 +71,7 @@ impl <P: HasPos + GridCell> Grid<P>{
     }
 }
 
-impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
+impl <'t,'r,P: HasPos + Debug> Iterator for  RangeQuery<'t,'r,P> {
     type Item = &'t P;
     fn next(&mut self) -> Option<&'t P> {
         'outer: loop{
@@ -93,16 +94,16 @@ impl <'t,'r,P: HasPos> Iterator for  RangeQuery<'t,'r,P> {
 }
 
 
-struct NeighborQuery<'t,P: HasPos + GridCell + 't>{
+struct NeighborQuery<'t,P: HasPos + GridCell + 't + Debug>{
     grid: &'t Grid<P>,
-    main_iter:  hash_map::Iter<'t,BucketPos,RefCell<Vec<P>>>,
-    bucket: slice::Iter<'t,P>,
+    main_iter:  hash_map::Iter<'t,BucketPos,RefCell<Vec<Rc<P>>>>,
+    bucket: slice::Iter<'t,Rc<P>>,
     nhood: Neighborhood2<'t,P>,
     region: Region,
         
 }
 
-impl<'t,P: HasPos + GridCell>  NeighborQuery<'t,P>{
+impl<'t,P: HasPos + GridCell + Debug>  NeighborQuery<'t,P>{
     //returns a value that continues the iter borrow, so
     //'nexties' can't be called again until the neighborhood borrowed from the previous call
     //is out of scope.  This is to save us allocating a vec every single time (since the points we're
@@ -118,7 +119,7 @@ impl<'t,P: HasPos + GridCell>  NeighborQuery<'t,P>{
                 return Some(&self.nhood);
             }
             if let Some((key,bucket_vec)) = self.main_iter.next(){
-                self.bucket = bucket_vec.iter();
+                self.bucket = bucket_vec.borrow().iter();
             }else{
                 break;
             }

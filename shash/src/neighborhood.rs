@@ -1,5 +1,6 @@
 use rect::{HasPos,Pos,BucketPos};
 use grid::Grid;
+use std::fmt::Debug;
 pub enum Neighbor2{
     Point = 0,    
     UpLeft,
@@ -14,7 +15,7 @@ pub enum Neighbor2{
 }
 //Next step: make neighbor a slice.  Sigh...
 #[derive(Debug)]
-pub enum Neighbor<'t,P: HasPos + 't> {
+pub enum Neighbor<'t,P: HasPos + 't + Debug> {
     UpLeft(Option<&'t P>),
     Up(Option<&'t P>),
     UpRight(Option<&'t P>),
@@ -28,12 +29,12 @@ pub enum Neighbor<'t,P: HasPos + 't> {
 }
 
 #[derive(Debug)]
-pub struct  Neighborhood2<'t,P: HasPos + 't>{
+pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
     neighbors: Box<[Option<&'t P>]>,
     grid: &'t Grid<P>,
 }
 
-impl <'t,P: HasPos +'t>  Neighborhood2<'t,P>{
+impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
     pub fn new(grid: &'t Grid<P>) -> Neighborhood2<'t,P> {
         Neighborhood2{neighbors:vec![None,None,None,None,None,None,None,None,None].into_boxed_slice(),grid: grid}
     }
