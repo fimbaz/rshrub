@@ -33,7 +33,6 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     }
     pub fn insert(&mut self,point: P){
         let bucket: &mut RefCell<Vec<Rc<P>>> = self.map.entry(BucketPos::from(point.get_pos())).or_insert(RefCell::new(vec![]));
-        let mut bucket_exists = false;
         let mut pos_in_bucket = None;
         {
             let val  = (*bucket).borrow();
