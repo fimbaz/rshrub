@@ -29,7 +29,59 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
     Point(Option<&'t P>)
 
 }
+impl Neighbor2{
+    pub fn get_neighbor_pos(n2: Neighbor2,p: &HasPos) -> Option<Pos>{
+        let point = p.get_pos();
+        match n2 {
+            UpLeft => {
+                if point.x != 0 && point.y != 0{
+                    return Some(Pos::new(point.x-1,point.y-1))
+                }
+            }
+            Up => {
+                if point.y != 0{
+                    return Some(Pos::new(point.x,point.y-1))
+                }
+            }
+            UpRight => {
+                if point.x != usize::max_value() && point.y != 0{
+                    return Some(Pos::new(point.x+1,point.y-1))
+                }
+            }
+            Right => {
+                if point.x != usize::max_value(){
+                    return Some(Pos::new(point.x,point.y-1))
+                }
+            }
+            DownRight => {
+                if point.x != usize::max_value() && point.y != usize::max_value(){
+                    return Some(Pos::new(point.x+1,point.y+1))
+                }
+            }
+            Down => {
+                if  point.y != usize::max_value(){
+                    return Some(Pos::new(point.x,point.y+1))
+                }
+            }
+            DownLeft => {
+                if point.x != 0 && point.y != usize::max_value(){
+                    return Some(Pos::new(point.x-1,point.y+1))
+                }
+            }
+            Left => {
+                if point.x != 0{
+                    return Some(Pos::new(point.x-1,point.y+1))
+                }
+            }
+            Point => {
+                return Some(Pos::new(point.x,point.y))
+            }
 
+
+        }
+        return None;
+    }
+}
 #[derive(Debug)]
 pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
     pub neighbors: &'t mut Box<[Option<Rc<P>>]>,
