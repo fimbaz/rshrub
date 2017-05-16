@@ -30,7 +30,7 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 
 }
 impl Neighbor2{
-    pub fn get_neighbor_pos(n2: Neighbor2,p: &HasPos) -> Option<Pos>{
+    pub fn get_neighbor_pos(p: &HasPos,n2: Neighbor2) -> Option<Pos>{
         let point = p.get_pos();
         match n2 {
             UpLeft => {
