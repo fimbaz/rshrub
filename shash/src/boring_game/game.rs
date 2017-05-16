@@ -7,7 +7,7 @@ use grid::Grid;
 use std::cell::RefCell;
 use neighborhood::{Neighbor2,Neighborhood2};
 use tile::{Tile,TileHolder,Resources,Substrate};
-
+pub const UNUSED_VALUE: f32       = 0.0;
 pub const AIR_SENSITIVITY: f32       = 0.1;
 pub const STANDARD_AIR_PRESSURE: f32 = 1.0;
 pub const AIR_DAMPING: f32           =  8.0; //AIR_DAMPING must be >= number of neighbors to preserve conservation of mass (untested).
@@ -18,7 +18,7 @@ pub struct BoringGame {
 }
 
 impl BoringGame{
-    pub fn new_tile(&mut self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
+    pub fn new_tile(&self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
         let substrate = if pos.y < self.ground_level{
             Substrate::Dirt()
         }
@@ -27,7 +27,7 @@ impl BoringGame{
         };
         Ok(TileHolder::new_v1(pos,water,air,substrate))
     }
-    pub fn new_tile_with_substrate(&mut self,pos:Pos,water: f32, air: f32,substrate:Substrate) -> Result<TileHolder,String>{
+    pub fn new_tile_with_substrate(&self,pos:Pos,water: f32, air: f32,substrate:Substrate) -> Result<TileHolder,String>{
         Ok(TileHolder::new_v1(pos,water,air,substrate))
     }
     
@@ -56,12 +56,15 @@ impl BoringGame{
             let mut neighbor_exists = true;
             for (i,maybe_neighbor_ref) in enumerated_neighbors {//maybe_neighbor_ref is actually an Option<TileHolder>, but Tileholder is just a Pos and a RefCell.
                 let neighbor_ref = maybe_neighbor_ref;
-                let mut npress_air = 0.0;
+                let mut npress_air = STANDARD_AIR_PRESSURE;
                 if neighbor_ref.is_some(){ //Some(ref neighbor_ref) = *maybe_neighbor_ref {
                     let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
+                    if neighbor.resources.air.1.is_some(){
+                        neighbor.resources.air.0 = neighbor.resources.air.1.unwrap();
+                        neighbor.resources.air.1 = None;
+                    }
                     npress_air = neighbor.resources.air.0;
                 }else{
-                    npress_air = STANDARD_AIR_PRESSURE;
                     neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
                 let dpress = npress_air - ppress_air;
@@ -73,10 +76,11 @@ impl BoringGame{
                 if npress_air != STANDARD_AIR_PRESSURE{
                     if neighbor_ref.is_some(){
                         let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
-                        neighbor.resources.air.1 = npress_air;
+                        neighbor.resources.air.1 = Some(npress_air);
                         //get on with it.
                     }else{
-                        let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
+                        let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos).unwrap();
+                        let tile = self.new_tile(neighbor_pos,UNUSED_VALUE,npress_air);
                     }
                 }
             }        

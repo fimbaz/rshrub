@@ -21,8 +21,8 @@ pub enum Substrate{
 
 #[derive(Debug,Copy,Clone)]
 pub struct Resources{
-    pub water: (f32,f32),
-    pub air: (f32,f32),
+    pub water: (f32,Option<f32>),
+    pub air: (f32,Option<f32>),
     pub substrate: Substrate,
 }
 #[derive(Debug,Copy,Clone)]
@@ -37,7 +37,8 @@ pub struct TileHolder{
 
 impl Tile{
     pub fn new_v1(water:f32,air:f32,substrate: Substrate) -> Tile{
-        return Tile { resources: Resources {water:(water,0.0),air:(air,0.0),substrate} };
+        //water.1 and air.1 are the 'backbuffers' -- copied to .0 before simulation begins.
+        return Tile { resources: Resources {water:(0.0,Some(water)),air:(0.0,Some(air)),substrate} };
     }
     pub fn repr(&self)  -> Cell{
         return Cell::default();
@@ -62,8 +63,8 @@ impl GridCell for TileHolder{
         let other_resources = self.tile.borrow().resources;
         my_resources.water.0 += other_resources.water.0;
         my_resources.air.0 += other_resources.air.0;
-        my_resources.water.1 += other_resources.water.1;
-        my_resources.air.1 += other_resources.air.1;
+        my_resources.water.1 = other_resources.water.1; // this makes merging insane for now-- we may replace this whole impl with a stub until we need items
+        my_resources.air.1 = other_resources.air.1;
         my_resources.substrate = other_resources.substrate;
     }
 
