@@ -7,6 +7,10 @@ use grid::Grid;
 use std::cell::RefCell;
 use neighborhood::{Neighbor2,Neighborhood2};
 use tile::{Tile,TileHolder,Resources,Substrate};
+
+pub const AIR_SENSITIVITY: f32       = 0.1;
+pub const STANDARD_AIR_PRESSURE: f32 = 1.0;
+pub const AIR_DAMPING: f32           =  8.0;
 pub struct BoringGame {
     pub grid: Grid<TileHolder>,
     pub ground_level: usize,
@@ -49,21 +53,28 @@ impl BoringGame{
             let point_ref: &TileHolder = Rc::borrow(&rc);
             let point = point_ref.tile.borrow_mut();
             let mut ppress_air = point.resources.air.0;
+            let mut neighbor_exists = true;
             for (i,maybe_neighbor_ref) in enumerated_neighbors {//maybe_neighbor_ref is actually an Option<TileHolder>, but Tileholder is just a Pos and a RefCell.
                 let mut npress_air = 0.0;
                 if let Some(ref neighbor_ref) = *maybe_neighbor_ref {
                     let mut neighbor = neighbor_ref.tile.borrow_mut();
+
                     npress_air = neighbor.resources.air.0;
                 }else{
-                    npress_air = 0.0;
+                    npress_air = STANDARD_AIR_PRESSURE;
                     let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
+                    neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
                 let dpress = npress_air - ppress_air;
-                let flow = f32::min(f32::max(dpress, ppress_air/8.0), -npress_air/8.0);
-                npress_air +=flow;
-                ppress_air -=flow;
-            }            
+                let flow = f32::min(f32::max(dpress, ppress_air/AIR_DAMPING), -npress_air/AIR_DAMPING);
+                if flow > AIR_SENSITIVITY{
+                    npress_air +=flow;
+                    ppress_air -=flow;
+                }
+                if npress_air != STANDARD_AIR_PRESSURE{
+                    
+                }
+            }        
         }
-
     }
 }
