@@ -10,7 +10,7 @@ use tile::{Tile,TileHolder,Resources,Substrate};
 
 pub const AIR_SENSITIVITY: f32       = 0.1;
 pub const STANDARD_AIR_PRESSURE: f32 = 1.0;
-pub const AIR_DAMPING: f32           =  8.0;
+pub const AIR_DAMPING: f32           =  8.0; //AIR_DAMPING must be >= number of neighbors to preserve conservation of mass (untested).
 pub struct BoringGame {
     pub grid: Grid<TileHolder>,
     pub ground_level: usize,
@@ -55,9 +55,10 @@ impl BoringGame{
             let mut ppress_air = point.resources.air.0;
             let mut neighbor_exists = true;
             for (i,maybe_neighbor_ref) in enumerated_neighbors {//maybe_neighbor_ref is actually an Option<TileHolder>, but Tileholder is just a Pos and a RefCell.
+                let neighbor_ref = maybe_neighbor_ref;
                 let mut npress_air = 0.0;
-                if let Some(ref neighbor_ref) = *maybe_neighbor_ref {
-                    let mut neighbor = neighbor_ref.tile.borrow_mut();
+                if neighbor_ref.is_some(){ //Some(ref neighbor_ref) = *maybe_neighbor_ref {
+                    let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
                     npress_air = neighbor.resources.air.0;
                 }else{
                     npress_air = STANDARD_AIR_PRESSURE;
@@ -70,8 +71,9 @@ impl BoringGame{
                     ppress_air -=flow;
                 }
                 if npress_air != STANDARD_AIR_PRESSURE{
-                    if let Some(ref neighbor_ref) = *maybe_neighbor_ref{
-                        let mut neighbor = neighbor_ref.tile.borrow_mut();
+                    if neighbor_ref.is_some(){
+                        let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
+                        neighbor.resources.air.1 = npress_air;
                         //get on with it.
                     }else{
                         let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
