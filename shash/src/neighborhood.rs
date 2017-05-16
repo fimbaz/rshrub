@@ -30,7 +30,23 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 
 }
 impl Neighbor2{
-    pub fn get_neighbor_pos(p: &HasPos,n2: Neighbor2) -> Option<Pos>{
+    pub fn from_usize(n: usize) -> Option<Neighbor2>{
+        match n{
+            0 => Some(Neighbor2::Point),
+            1 => Some(Neighbor2::UpLeft),
+            2 => Some(Neighbor2::Up),
+            3 => Some(Neighbor2::UpRight),
+            4 => Some(Neighbor2::Right),
+            5 => Some(Neighbor2::DownRight),
+            6 => Some(Neighbor2::Down),
+            7 => Some(Neighbor2::DownLeft),
+            8 => Some(Neighbor2::Left),
+            _ => None
+                
+        }
+    }
+    pub fn get_pos(&self,p: &HasPos) -> Option<Pos>{
+        let n2 = self;
         let point = p.get_pos();
         match n2 {
             UpLeft => {
@@ -50,7 +66,7 @@ impl Neighbor2{
             }
             Right => {
                 if point.x != usize::max_value(){
-                    return Some(Pos::new(point.x,point.y-1))
+                    return Some(Pos::new(point.x+1,point.y))
                 }
             }
             DownRight => {
@@ -70,7 +86,7 @@ impl Neighbor2{
             }
             Left => {
                 if point.x != 0{
-                    return Some(Pos::new(point.x-1,point.y+1))
+                    return Some(Pos::new(point.x-1,point.y))
                 }
             }
             Point => {
