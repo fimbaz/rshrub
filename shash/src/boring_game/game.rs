@@ -83,6 +83,7 @@ impl BoringGame{
                         let tile = self.new_tile(neighbor_pos,UNUSED_VALUE,npress_air);
                     }
                 }
+                
             }        
         }
     }
