@@ -58,9 +58,10 @@ impl BoringGame{
                     npress_air = 0.0;
                     let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
                 }
-                
-            }
+                let dpress = npress_air - ppress_air;
+                let flow = f32::min(f32::max(dpress, ppress_air/8.0), -npress_air/8.0);
             
+            }            
         }
 
     }
