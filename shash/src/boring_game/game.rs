@@ -60,7 +60,8 @@ impl BoringGame{
                 }
                 let dpress = npress_air - ppress_air;
                 let flow = f32::min(f32::max(dpress, ppress_air/8.0), -npress_air/8.0);
-            
+                npress_air +=flow;
+                ppress_air -=flow;
             }            
         }
 
