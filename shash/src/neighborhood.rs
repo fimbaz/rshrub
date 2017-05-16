@@ -2,6 +2,7 @@ use rect::{HasPos,Pos,BucketPos};
 use grid::Grid;
 use std::rc::Rc;
 use std::fmt::Debug;
+use std::cell::RefCell;
 pub enum Neighbor2{
     Point = 0,    
     UpLeft,
@@ -32,6 +33,7 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 #[derive(Debug)]
 pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
     neighbors: &'t mut Box<[Option<Rc<P>>]>,
+    bucket: Rc<RefCell<Vec<Rc<P>>>>,
     grid: &'t Grid<P>,
 }
 
@@ -40,8 +42,8 @@ impl  <'t,P: HasPos +'t + Debug>  Drop for  Neighborhood2<'t,P>{
     }
 }
 impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
-    pub fn new(grid: &'t Grid<P>,neighborhood_vec: &'t mut Box<[Option<Rc<P>>]>) -> Neighborhood2<'t,P> {
-        Neighborhood2{neighbors:neighborhood_vec,grid: grid}
+    pub fn new(grid: &'t Grid<P>,neighborhood_vec: &'t mut Box<[Option<Rc<P>>]>,bucket:Rc<RefCell<Vec<Rc<P>>>>) -> Neighborhood2<'t,P> {
+        Neighborhood2{neighbors:neighborhood_vec,grid: grid,bucket:bucket}
     }
     pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<Rc<P>>{
         self.neighbors.get(nbor as usize).unwrap().clone()
@@ -49,7 +51,6 @@ impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
     pub fn len(&self) -> usize {
         self.neighbors.iter().fold(0,|i,x|if let &Some(ref f) = x {i+1} else {i})
     }
-
     pub fn populate<'r,'s>(&'s mut self,point: &'r P, iter:&'r mut Iterator<Item=Rc<P>>){
         let p = point.get_pos();
         for n in self.neighbors.iter_mut(){

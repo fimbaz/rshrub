@@ -4,7 +4,7 @@ use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
 use std::cell::RefCell;
-use std::cell::Ref;
+use std::cell::{RefMut,Ref};
 use std::rc::Rc;
 use std::fmt::Debug;
 use std::borrow::Borrow;
@@ -14,14 +14,14 @@ pub trait GridCell {
 }
 #[derive(Debug)]
 pub struct Grid<P: HasPos + Debug> {
-    pub map: FnvHashMap<BucketPos,RefCell<Vec<Rc<P>>>>,
+    pub map: FnvHashMap<BucketPos,Rc<RefCell<Vec<Rc<P>>>>>,
 }
 
 pub struct RangeQuery<'t,'r,P: HasPos + 't>{
     bucket_keys: Iter<'r>,
     region: &'r  Region,
-    map: &'t FnvHashMap<BucketPos,RefCell<Vec<Rc<P>>>>,
-    bucket_ref: Option<Ref<'t,Vec<Rc<P>>>>,
+    map: &'t FnvHashMap<BucketPos,Rc<RefCell<Vec<Rc<P>>>>>,
+    bucket_ref: Option<Rc<RefCell<Vec<Rc<P>>>>>,
     cursor_pos: usize,
 }
 impl <P: HasPos + GridCell + Debug> Grid<P>{
@@ -32,20 +32,20 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
         self.map.keys().map(|x|x.clone()).collect()
     }
     pub fn insert(&mut self,point: P){
-        let bucket: &mut RefCell<Vec<Rc<P>>> = self.map.entry(BucketPos::from(point.get_pos())).or_insert(RefCell::new(vec![]));
+        let rc_ref_bucket: &mut Rc<RefCell<Vec<Rc<P>>>> = self.map.entry(BucketPos::from(point.get_pos())).or_insert(Rc::new(RefCell::new(vec![])));
         let mut pos_in_bucket = None;
         {
-            let val  = (*bucket).borrow();
-            pos_in_bucket =  val.iter().position(|x|x.get_pos()==point.get_pos());
+            let bucket   = RefCell::borrow(Rc::borrow(rc_ref_bucket));
+            pos_in_bucket =  bucket.iter().position(|x|x.get_pos()==point.get_pos()).clone();
         }
 
         if pos_in_bucket.is_some(){
-            let bor = (*bucket).borrow();
+            let mut bor = RefCell::borrow(Rc::borrow(rc_ref_bucket));
             let mut existing_point = bor.get(pos_in_bucket.unwrap()).unwrap();
             existing_point.merge(point);
             
         }else{
-            let mut bor = (*bucket).borrow_mut();
+            let mut bor = RefCell::borrow_mut(Rc::borrow(rc_ref_bucket));
             bor.push(Rc::new(point));
         }
 
@@ -74,7 +74,7 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
         let mut bucket_keys = region.iter();
         
         if let Some(bucket_ref) = self.map.get(&bucket_keys.next().unwrap()){
-            RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:Some(bucket_ref.borrow()),cursor_pos:0}
+            RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:Some(bucket_ref.clone()),cursor_pos:0}
         }else{
             RangeQuery{bucket_keys:bucket_keys,map:&self.map,region:region,bucket_ref:None,cursor_pos:0}
         }
@@ -84,7 +84,7 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
         let mut main_iter = self.map.iter();
         let mut bucket = main_iter.next().unwrap();
         let mut neighbors = vec![None,None,None,None,None,None,None,None,None].into_boxed_slice();
-        NeighborQuery { neighbors: neighbors, grid:self, main_iter:main_iter,bucket:bucket.1.borrow(),region: Region::square(0,0,0),bucket_cursor:0}
+        NeighborQuery { neighbors: neighbors, grid:self, main_iter:main_iter,bucket:bucket.1.clone(),region: Region::square(0,0,0),bucket_cursor:0}
     }
 }
 
@@ -93,7 +93,8 @@ impl <'t,'r,P: HasPos + Debug> Iterator for  RangeQuery<'t,'r,P> {
     fn next(&mut self) -> Option<Rc<P>> {
         'outer: loop{
             if let Some(ref bucket_ref) = self.bucket_ref{
-                while let Some(point) = bucket_ref.get(self.cursor_pos){
+                let mut bucket = RefCell::borrow(Rc::borrow(bucket_ref));
+                while let Some(point) = bucket.get(self.cursor_pos){
                     let pos = point.get_pos();
                     self.cursor_pos +=1;
                     if self.region.contains(&pos){
@@ -103,7 +104,7 @@ impl <'t,'r,P: HasPos + Debug> Iterator for  RangeQuery<'t,'r,P> {
             }
             for bucket in &mut self.bucket_keys{
                 if let Some(vec) = self.map.get(&bucket){
-                    self.bucket_ref = Some(vec.borrow());
+                    self.bucket_ref = Some(vec.clone());
                         self.cursor_pos = 0;
                 }
                 continue 'outer;
@@ -117,8 +118,8 @@ impl <'t,'r,P: HasPos + Debug> Iterator for  RangeQuery<'t,'r,P> {
 
 struct NeighborQuery<'t,P: HasPos + GridCell + 't + Debug>{
     grid: &'t Grid<P>,
-    main_iter:  hash_map::Iter<'t,BucketPos,RefCell<Vec<Rc<P>>>>,
-    bucket: Ref<'t,Vec<Rc<P>>>,
+    main_iter:  hash_map::Iter<'t,BucketPos,Rc<RefCell<Vec<Rc<P>>>>>,
+    bucket: Rc<RefCell<Vec<Rc<P>>>>,
     bucket_cursor: usize,
     neighbors: Box<[Option<Rc<P>>]>, //so Neighborhood2 can Drop w/o realloc
     region: Region,
@@ -132,18 +133,22 @@ impl<'t,P: HasPos + GridCell + Debug>  NeighborQuery<'t,P>{
     //accessing aren't contiguous in the heap)
     pub fn nexties<'r>(&'r mut self) -> Option<Neighborhood2<'r,P>>{
         'outer: loop{
-            while let Some(point) = self.bucket.get(self.bucket_cursor){
-                let pos = point.get_pos();
-                self.region = Region::rectangle(pos.x.saturating_sub(1),pos.y.saturating_sub(1),
-                                                if pos.x == 0 { 1 } else { 2 },if pos.y == 0 {1} else {2} );
-                let mut rq = self.grid.range_query(&self.region);
-                let mut nhood = Neighborhood2::new(self.grid,&mut self.neighbors);
-                nhood.populate(&point,&mut rq);
-                self.bucket_cursor +=1;
-                return Some(nhood);
+            {
+                let bucket = RefCell::borrow(Rc::borrow(&self.bucket));
+                while let Some(point) = bucket.get(self.bucket_cursor){
+                    let pos = point.get_pos();
+                    self.region = Region::rectangle(pos.x.saturating_sub(1),pos.y.saturating_sub(1),
+                                                    if pos.x == 0 { 1 } else { 2 },if pos.y == 0 {1} else {2} );
+                    let mut rq = self.grid.range_query(&self.region);
+                    let mut nhood = Neighborhood2::new(self.grid,&mut self.neighbors,self.bucket.clone());
+                    nhood.populate(&point,&mut rq);
+                    self.bucket_cursor +=1;
+                    return Some(nhood);
+                }
+                
             }
             if let Some((key,bucket_vec)) = self.main_iter.next(){
-                self.bucket = bucket_vec.borrow();
+                self.bucket = bucket_vec.clone();
                 self.bucket_cursor = 0;
 
                 continue 'outer;                
