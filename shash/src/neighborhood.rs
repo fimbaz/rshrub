@@ -32,7 +32,7 @@ pub enum Neighbor<'t,P: HasPos + 't + Debug> {
 
 #[derive(Debug)]
 pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
-    neighbors: &'t mut Box<[Option<Rc<P>>]>,
+    pub neighbors: &'t mut Box<[Option<Rc<P>>]>,
     bucket: Rc<RefCell<Vec<Rc<P>>>>,
     grid: &'t Grid<P>,
 }

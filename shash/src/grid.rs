@@ -10,7 +10,7 @@ use std::fmt::Debug;
 use std::borrow::Borrow;
 use neighborhood::Neighborhood2;
 pub trait GridCell {
-    fn  merge(&self,Self);
+   fn  merge(&self,Self);
 }
 #[derive(Debug)]
 pub struct Grid<P: HasPos + Debug> {
@@ -52,24 +52,16 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
 
         
     }
-    /*
-    //TODO remove internal calls and save a hash.
-    pub fn translate(&mut self,old_pos: Pos,new_pos: Pos){
-        if let Some(mut point) = self.delete(old_pos) {
-            Rc::borrow(point).set_pos(new_pos.x,new_pos.y);
-            self.insert(Rc::try_unwrap(point).expect("must be between turns to modify vec"));
-        }
-    }
-    pub fn delete(&mut self,pos: Pos) -> Option<Rc<P>>{
-        if let Some(bucket) = self.map.get_mut(&BucketPos::from(pos)){
+    pub fn delete(&mut self,pos: Pos) -> Option<P>{
+        if let Some(bucket_ref) = self.map.get_mut(&BucketPos::from(pos)){
+            let mut bucket = RefCell::borrow_mut(Rc::borrow(bucket_ref));
             if let Some(i) = bucket.borrow().iter().position(|x|x.get_pos()==pos){
-                let point = bucket.borrow_mut().remove(i);
-                return Some(point);
+                let rc = bucket.remove(i);
+                return Rc::try_unwrap(rc).ok();
             }
         }
         return None;
     }
-*/
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'t,'r,P>{
         let mut bucket_keys = region.iter();
         

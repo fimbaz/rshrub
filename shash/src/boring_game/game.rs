@@ -14,22 +14,25 @@ pub struct BoringGame {
 }
 
 impl BoringGame{
-    pub fn new_tile(&mut self,pos:Pos,water: f32, air: f32) -> Result<(),String>{
+    pub fn new_tile(&mut self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
         let substrate = if pos.y < self.ground_level{
             Substrate::Dirt()
         }
         else {
             Substrate::Space()
         };
-        Ok(())
+        Ok(TileHolder::new_v1(pos,water,air,substrate))
     }
-
+    pub fn new_tile_with_substrate(&mut self,pos:Pos,water: f32, air: f32,substrate:Substrate) -> Result<TileHolder,String>{
+        Ok(TileHolder::new_v1(pos,water,air,substrate))
+    }
+    
     pub fn new() -> BoringGame {
         let mut grid = Grid::new();
         let mut game= BoringGame { grid: grid, ground_level: 30 };
         for i in 0..100 {
             for j in 0..100 {
-                game.new_tile(Pos::new(i,j),1.0,0.0);
+                game.new_tile(Pos::new(i,j),0.0,1.0);
             }
         }
         game
@@ -38,8 +41,11 @@ impl BoringGame{
         println!("hi");
         let region = Region::square(0,0,0); //dummy
         let mut all_the_neighbors_iter = self.grid.neighbor_query(&region); 
-        while let Some(neighbors) = all_the_neighbors_iter.nexties() {
-            println!("{:?}",neighbors);
+        while let Some(neighborhood) = all_the_neighbors_iter.nexties() {
+            for (i,neighbor) in neighborhood.neighbors.iter().enumerate(){
+                
+            }
+
         }
     }
 }
