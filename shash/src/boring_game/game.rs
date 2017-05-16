@@ -58,11 +58,9 @@ impl BoringGame{
                 let mut npress_air = 0.0;
                 if let Some(ref neighbor_ref) = *maybe_neighbor_ref {
                     let mut neighbor = neighbor_ref.tile.borrow_mut();
-
                     npress_air = neighbor.resources.air.0;
                 }else{
                     npress_air = STANDARD_AIR_PRESSURE;
-                    let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
                     neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
                 let dpress = npress_air - ppress_air;
@@ -72,7 +70,12 @@ impl BoringGame{
                     ppress_air -=flow;
                 }
                 if npress_air != STANDARD_AIR_PRESSURE{
-                    
+                    if let Some(ref neighbor_ref) = *maybe_neighbor_ref{
+                        let mut neighbor = neighbor_ref.tile.borrow_mut();
+                        //get on with it.
+                    }else{
+                        let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos);
+                    }
                 }
             }        
         }
