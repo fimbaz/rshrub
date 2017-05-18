@@ -3,6 +3,7 @@ use grid::{Grid,GridCell};
 use std::rc::Rc;
 use std::fmt::Debug;
 use std::cell::RefCell;
+#[derive(Debug)]
 pub enum Neighbor2{
     Point = 0,    
     UpLeft,

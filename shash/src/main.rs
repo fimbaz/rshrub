@@ -15,9 +15,11 @@ use std::cell::RefCell;
 use ui::core::UI;
 use tile::Tile;
 fn main(){
-    let mut ui =  UI::new();
-    ui.pump();
-    //    let mut  game = BoringGame::new();
-    //    game.simulate();
+//    let mut ui =  UI::new();
+//    ui.pump();
+    let mut  game = BoringGame::new();
+    for i in 1..100{
+        game.simulate();
+    }
     
 }

@@ -93,7 +93,7 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     pub fn neighbor_query<'r>(& self,query:&'r Region) -> NeighborQuery<P>{
         let mut bucket_list = self.occupied_buckets();
         let map = self.borrow_map();
-        let mut bucket = map.get(bucket_list.get(0).unwrap()).unwrap();
+        let mut bucket = map.get(bucket_list.get(0).expect("Grid must contain at least one point.")).expect("occupied_buckets must return only keys to buckets in Grid");
         let mut neighbors = vec![None,None,None,None,None,None,None,None,None].into_boxed_slice();
         NeighborQuery { neighbors: neighbors, grid:self.clone(), bucket_list:bucket_list,bucket:bucket.clone(),region: Region::square(0,0,0),bucket_cursor:0,bucket_list_i:0}
     }

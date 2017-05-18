@@ -36,8 +36,10 @@ impl BoringGame{
     
     pub fn new() -> BoringGame {
         let mut grid = Grid::new();
+        
         let mut game= BoringGame { grid: grid, ground_level: 30 };
-        game.new_tile(Pos::new(50,50),0.0,1.0);
+        let tile = game.new_tile(Pos::new(50,50),0.0,10.0).unwrap();
+        game.grid.insert(tile);
         game
     }
     pub fn simulate(&mut self) {
@@ -54,6 +56,10 @@ impl BoringGame{
             let mut ppress_air = point.resources.air.0;
             let mut neighbor_exists = true;
             for (i,maybe_neighbor_ref) in enumerated_neighbors {//maybe_neighbor_ref is actually an Option<TileHolder>, but Tileholder is just a Pos and a RefCell.
+                let neighbor_pos = Neighbor2::from_usize(i).expect("i should always be between 0 and 8").get_pos(&point_ref.pos);
+                if neighbor_pos.is_none(){
+                    continue;
+                }
                 let neighbor_ref = maybe_neighbor_ref;
                 let mut npress_air = STANDARD_AIR_PRESSURE;
                 if neighbor_ref.is_some(){ //Some(ref neighbor_ref) = *maybe_neighbor_ref {
@@ -70,18 +76,17 @@ impl BoringGame{
                 }
                 let dpress = npress_air - ppress_air;
                 let flow = f32::min(f32::max(dpress, ppress_air/AIR_DAMPING), -npress_air/AIR_DAMPING);
-                if flow > AIR_SENSITIVITY{
+                if f32::abs(flow) > AIR_SENSITIVITY{
                     npress_air +=flow;
                     ppress_air -=flow;
                 }
-                if npress_air != STANDARD_AIR_PRESSURE{
+                if npress_air < (STANDARD_AIR_PRESSURE-AIR_SENSITIVITY) || npress_air > (STANDARD_AIR_PRESSURE+AIR_SENSITIVITY){
                     if neighbor_ref.is_some(){
                         let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
                         neighbor.resources.air.1 = Some(npress_air);
                         //get on with it.
                     }else{
-                        let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos).unwrap();
-                        let tile = self.new_tile(neighbor_pos,UNUSED_VALUE,npress_air);
+                        let tile = self.new_tile(neighbor_pos.expect("nonexistent neighbors have been filtered out."),UNUSED_VALUE,npress_air);
                         self.grid.insert(tile.unwrap());
                     }
                 }
