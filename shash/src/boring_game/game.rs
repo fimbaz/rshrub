@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use neighborhood::{Neighbor2,Neighborhood2};
 use tile::{Tile,TileHolder,Resources,Substrate};
 pub const UNUSED_VALUE: f32       = 0.0;
-pub const AIR_SENSITIVITY: f32       = 0.1;
+pub const AIR_SENSITIVITY: f32       = 0.01;
 pub const STANDARD_AIR_PRESSURE: f32 = 1.0;
 pub const AIR_DAMPING: f32           =  8.0; //AIR_DAMPING must be >= number of neighbors to preserve conservation of mass (untested).
 pub struct BoringGame {
@@ -75,8 +75,9 @@ impl BoringGame{
                     neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
                 let dpress = npress_air - ppress_air;
-                let flow = f32::min(f32::max(dpress, ppress_air/AIR_DAMPING), -npress_air/AIR_DAMPING);
+                let flow = f32::max(f32::min(dpress, ppress_air/AIR_DAMPING), -npress_air/AIR_DAMPING);
                 if f32::abs(flow) > AIR_SENSITIVITY{
+                    println!("{:?}",flow);
                     npress_air +=flow;
                     ppress_air -=flow;
                 }
