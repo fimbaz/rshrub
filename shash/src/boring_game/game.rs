@@ -16,6 +16,9 @@ pub struct BoringGame {
     pub ground_level: usize,
         
 }
+//A tile is ready to delete if
+//1. it has been marked for deletion and
+//2. the turn on which it was so marked has ended.
 
 impl BoringGame{
     pub fn new_tile(&self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
@@ -54,10 +57,12 @@ impl BoringGame{
                 let neighbor_ref = maybe_neighbor_ref;
                 let mut npress_air = STANDARD_AIR_PRESSURE;
                 if neighbor_ref.is_some(){ //Some(ref neighbor_ref) = *maybe_neighbor_ref {
-                    let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
+                    let mut tile_holder = neighbor_ref.as_ref().unwrap();
+                    let mut neighbor = tile_holder.tile.borrow_mut();
                     if neighbor.resources.air.1.is_some(){
                         neighbor.resources.air.0 = neighbor.resources.air.1.unwrap();
                         neighbor.resources.air.1 = None;
+                        tile_holder.turn.set(self.grid.turn.get());
                     }
                     npress_air = neighbor.resources.air.0;
                 }else{
