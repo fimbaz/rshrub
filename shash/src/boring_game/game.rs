@@ -83,6 +83,8 @@ impl BoringGame{
                 
             }        
         }
+        self.grid.next_turn();
+        
     }
 }
 

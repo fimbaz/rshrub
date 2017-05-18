@@ -3,14 +3,14 @@ use fnv::FnvHashMap;
 use std::collections::hash_map;
 use std::slice;
 use std::iter::Filter;
-use std::cell::RefCell;
+use std::cell::{RefCell,Cell};
 use std::cell::{RefMut,Ref};
 use std::rc::Rc;
 use std::fmt::Debug;
 use std::borrow::Borrow;
 use neighborhood::Neighborhood2;
 pub trait GridCell {
-   fn  merge(&self,Self);
+    fn  merge(&self,Self);
 }
 type Bucket<P> = Rc<RefCell<Vec<Rc<P>>>>;
 type Map<P> = FnvHashMap<BucketPos,Bucket<P>>;
@@ -18,6 +18,7 @@ type Map<P> = FnvHashMap<BucketPos,Bucket<P>>;
 #[derive(Debug)]
 pub struct Grid<P: HasPos + Debug> {
     pub map: Rc<RefCell<Map<P>>>,
+    pub turn: Rc<Cell<usize>>,
 }
 
 pub struct RangeQuery<'r,P: HasPos + GridCell + Debug>{
@@ -29,10 +30,14 @@ pub struct RangeQuery<'r,P: HasPos + GridCell + Debug>{
 }
 impl <P: HasPos + GridCell + Debug> Grid<P>{
     pub fn new() -> Grid<P>{
-        return Grid {map: Rc::new(RefCell::new(FnvHashMap::default()))};
+        return Grid {turn: Rc::new(Cell::new(0)),map: Rc::new(RefCell::new(FnvHashMap::default()))};
     }
     pub fn clone(&self) -> Grid<P>{
-        return Grid{map:self.map.clone()};
+        return Grid{turn:self.turn.clone(),map:self.map.clone()};
+    }
+    pub fn next_turn(&self){
+        let cell = Rc::borrow(&self.turn);
+        Cell::set(cell,cell.get()+1);
     }
     pub fn borrow_map(&self) -> RefMut<Map<P>>{
         return RefCell::borrow_mut(Rc::borrow(&self.map));
