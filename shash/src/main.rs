@@ -18,8 +18,9 @@ fn main(){
 //    let mut ui =  UI::new();
 //    ui.pump();
     let mut  game = BoringGame::new();
-    for i in 1..100{
+    for i in 1..1000{
         game.simulate();
+        println!("{:?}",game.grid.occupied_buckets().len());
     }
     
 }

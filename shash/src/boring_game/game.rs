@@ -38,7 +38,7 @@ impl BoringGame{
         let mut grid = Grid::new();
         
         let mut game= BoringGame { grid: grid, ground_level: 30 };
-        let tile = game.new_tile(Pos::new(50,50),0.0,10.0).unwrap();
+        let tile = game.new_tile(Pos::new(50,50),0.0,100.0).unwrap();
         game.grid.insert(tile);
         game
     }
