@@ -34,11 +34,7 @@ impl BoringGame{
     pub fn new() -> BoringGame {
         let mut grid = Grid::new();
         let mut game= BoringGame { grid: grid, ground_level: 30 };
-        for i in 0..100 {
-            for j in 0..100 {
-                game.new_tile(Pos::new(i,j),0.0,1.0);
-            }
-        }
+        game.new_tile(Pos::new(50,50),0.0,1.0);
         game
     }
     pub fn simulate(&mut self) {
@@ -81,6 +77,7 @@ impl BoringGame{
                     }else{
                         let neighbor_pos = Neighbor2::from_usize(i).unwrap().get_pos(&point_ref.pos).unwrap();
                         let tile = self.new_tile(neighbor_pos,UNUSED_VALUE,npress_air);
+                        self.grid.insert(tile.unwrap());
                     }
                 }
                 

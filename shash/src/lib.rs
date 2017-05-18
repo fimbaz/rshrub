@@ -157,39 +157,6 @@ mod tests {
         b.iter(clj);
     }
     
-    
-    #[cfg(feature="bench")]
-    #[bench]
-    fn rq_bigquery(b: &mut Bencher){
-        let mut grid = Grid::new();
-        for i in (0..1000){
-            for j in (0..1000){
-                let val = grid.insert(ToyPos::new(i,j));
-            }
-        }
-        let mut ncount = 0;
-        for val in grid.map.values(){
-            ncount += val.borrow().len()
-        }
-        println!("{:?}",ncount);
-        let clj = || {
-            let mut count =0;
-            let it = grid.map.iter();
-            for item in it{
-                for point in item.1.borrow().iter(){
-                    let pos = point.get_pos();
-                    let x = pos.x; let y = pos.y;
-                    let region = Region::rectangle((x as usize).saturating_sub(1),(y as usize).saturating_sub(1),
-                                                   if x == 0 { 1 } else { 2 },if y == 0 {1} else {2} );                    
-                    let ncount = grid.range_query(&region).fold(0,|i,x| { test::black_box(x);  i+1});
-                    count += ncount;
-                }
-            }
-        };
-        println!("{:?}",clj());
-        b.iter(clj);
-    
-    }
     #[test]
     fn test_rq2(){
         let mut grid = Grid::new();

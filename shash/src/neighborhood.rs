@@ -1,5 +1,5 @@
 use rect::{HasPos,Pos,BucketPos};
-use grid::Grid;
+use grid::{Grid,GridCell};
 use std::rc::Rc;
 use std::fmt::Debug;
 use std::cell::RefCell;
@@ -99,19 +99,19 @@ impl Neighbor2{
     }
 }
 #[derive(Debug)]
-pub struct  Neighborhood2<'t,P: HasPos + 't + Debug>{
+pub struct  Neighborhood2<'t,P: HasPos + 't + Debug + GridCell>{
     pub neighbors: &'t mut Box<[Option<Rc<P>>]>,
     bucket: Rc<RefCell<Vec<Rc<P>>>>,
-    grid: &'t Grid<P>,
+    grid: Grid<P>,
 }
 
-impl  <'t,P: HasPos +'t + Debug>  Drop for  Neighborhood2<'t,P>{
+impl  <'t,P: HasPos +'t + Debug + GridCell>  Drop for  Neighborhood2<'t,P>{
     fn drop(&mut self){
     }
 }
-impl <'t,P: HasPos +'t + Debug>  Neighborhood2<'t,P>{
-    pub fn new(grid: &'t Grid<P>,neighborhood_vec: &'t mut Box<[Option<Rc<P>>]>,bucket:Rc<RefCell<Vec<Rc<P>>>>) -> Neighborhood2<'t,P> {
-        Neighborhood2{neighbors:neighborhood_vec,grid: grid,bucket:bucket}
+impl <'t,P: HasPos +'t + Debug + GridCell>  Neighborhood2<'t,P>{
+    pub fn new(grid: Grid<P>,neighborhood_vec: &'t mut Box<[Option<Rc<P>>]>,bucket:Rc<RefCell<Vec<Rc<P>>>>) -> Neighborhood2<'t,P> {
+        Neighborhood2{neighbors:neighborhood_vec,grid:grid,bucket:bucket}
     }
     pub fn get_neighbor(&self,nbor: Neighbor2) -> Option<Rc<P>>{
         self.neighbors.get(nbor as usize).unwrap().clone()
