@@ -15,7 +15,7 @@ mod tests {
     use fnv::FnvHashMap;
     use self::test::Bencher;
     use grid::{Grid,RangeQuery};
-    use rect::{BucketPos,Pos,Iter,Region,HasPos};
+    use rect::{BucketPos,Pos,Iter,Region,HasPos,RECT_BUCKET_SIZE};
     use grid::GridCell;
     #[derive(Debug,Eq,PartialEq)]
     struct ToyPos ( Pos );
@@ -52,10 +52,9 @@ mod tests {
     #[test]
     fn rect_iterator(){
         let region = Region::square(0,0,100);
-        println!("hi");
-        for pos in region.iter(){
-            println!("{:?}",pos);
-        }
+        let vec: Vec<BucketPos> = region.iter().collect();
+        println!("{:?}",vec);
+        assert_eq!(vec.len(),100/RECT_BUCKET_SIZE);
     }
 
     #[cfg(feature="bench")]

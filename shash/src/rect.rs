@@ -88,7 +88,7 @@ pub struct Iter<'t> {
 impl <'t> Iterator for Iter <'t>{
     type Item = BucketPos;
     fn next(&mut self) -> Option<BucketPos>{
-        if !self.region.contains_bucket::<BucketPos>(self.pos){ return None;}
+                if !self.region.contains_bucket::<BucketPos>(self.pos){ return None;}
         let mut newpos = self.pos;
         newpos.0.x+=RECT_BUCKET_SIZE;
         if !self.region.contains_bucket::<BucketPos>(newpos){
@@ -97,6 +97,7 @@ impl <'t> Iterator for Iter <'t>{
         
         let oldpos = self.pos;
         self.pos = newpos;
+        if !self.region.contains_bucket::<BucketPos>(oldpos){ return None;}
         return Some(oldpos);
         
     }    
@@ -123,7 +124,9 @@ impl Region{
         bpos == BucketPos::new(self.x,self.y) ||
             bpos == BucketPos::new(self.x+self.width,self.y) ||
             bpos == BucketPos::new(self.x,self.y+self.height) ||
-            bpos == BucketPos::new(self.x+self.width,self.y+self.height) 
+            bpos == BucketPos::new(self.x+self.width,self.y+self.height)
+
+            
     }
 
     pub fn iter(&self) -> Iter{

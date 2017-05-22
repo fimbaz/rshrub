@@ -1,8 +1,9 @@
-use rect::{Pos,HasPos,Region};
+use rect::{Pos,HasPos,Region,BucketPos};
 use grid::GridCell;
 use tile::Tile;
+use boring_game::game::BoringGame;
 use rustty::Cell;
-use rustty::{Size,HasSize};
+use rustty::{Size,HasSize,Attr};
 use rustty::ui::core::{Widget,Frame,HorizontalAlign,VerticalAlign,Painter,Alignable};
 use rustty::{CellAccessor};
 pub struct WorldView {
@@ -15,8 +16,28 @@ impl WorldView {
     pub fn new(x: usize, y: usize) -> WorldView{
         return WorldView { origin: Pos::new(x,y),cursor: Pos::new(0,0),frame: Frame::new(80,40) };
     }
-    
-    fn adjust_origin(&mut self,frame: &mut CellAccessor){
+    pub fn update_world(&mut self,game: &BoringGame){
+        self.adjust_origin();
+        self.draw_background(game.ground_level);
+        self.update_active(&game);
+        self.draw_cursor();
+    }
+    fn update_active(&mut self,game: &BoringGame){
+        let size = self.frame.size();
+        let roi = Region{x:self.origin.x,y:self.origin.y,width:size.0,height:size.1};
+        let boxes: Vec<BucketPos> = roi.iter().collect();
+            
+        for tile in  game.grid.range_query(&roi){
+            let pos = Pos {x: tile.pos.x - self.origin.x, y: tile.pos.y - self.origin.y};
+            let index = self.frame.pos_to_index(pos.x as usize, pos.y as usize).clone();
+            match index{
+                Some(i) => {self.frame.cellvec_mut()[i] = tile.repr();}
+                None => {}
+            }
+        }
+    }
+    fn adjust_origin(&mut self){
+        let frame = &mut self.frame;
         let origin = self.origin;
         let cursor = self.cursor;
         let frame_size = (frame.size().0.saturating_sub(1) as usize,frame.size().1.saturating_sub(1) as usize);
@@ -33,7 +54,13 @@ impl WorldView {
             }
         }
     }
-    
+    pub fn draw_cursor(&mut self){
+        let cursor = self.cursor;
+        let origin = self.origin;
+        let cursor_index = if let Some(i) = self.frame.pos_to_index(cursor.x.saturating_sub(origin.x) as usize,cursor.y.saturating_sub(origin.y)as usize) {i} else { 0 } ;
+        self.frame.cellvec_mut().get_mut(cursor_index).unwrap().set_attrs(Attr::Reverse);
+
+    }
     pub fn draw_background(&mut self,ground_level: usize){
         let frame_ground_level = ground_level.checked_sub(self.origin.y).unwrap_or(0) as u16;
         let mut frame_coords: (u16,u16)=(0,0);

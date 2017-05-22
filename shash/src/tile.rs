@@ -45,6 +45,11 @@ impl Tile{
         return Tile { resources: Resources {water:(0.0,Some(water)),air:(0.0,Some(air)),substrate} };
     }
     pub fn repr(&self)  -> TermCell{
+        if self.resources.air.0 > 0.125 {
+            TermCell::with_char('X');
+        }else if self.resources.air.0 >= 1.0{
+            TermCell::with_char('O');
+        }
         return TermCell::default();
     }
     pub fn stp_ground_repr() -> TermCell{
@@ -58,6 +63,9 @@ impl Tile{
 impl TileHolder {
     pub fn new_v1(pos:Pos,air:f32,water:f32,substrate:Substrate) -> TileHolder{
         TileHolder{pos:pos,tile:RefCell::new(Tile::new_v1(water,air,substrate)),turn:Cell::new(0)}
+    }
+    pub fn repr(&self) -> TermCell{
+        return self.tile.borrow().repr();
     }
 }
 

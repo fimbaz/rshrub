@@ -21,7 +21,7 @@ pub struct BoringGame {
 //2. the turn on which it was so marked has ended.
 
 impl BoringGame{
-    pub fn new_tile(&self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
+    fn new_tile(&self,pos:Pos,water: f32, air: f32) -> Result<TileHolder,String>{
         let substrate = if pos.y < self.ground_level{
             Substrate::Dirt()
         }
@@ -30,15 +30,18 @@ impl BoringGame{
         };
         Ok(TileHolder::new_v1(pos,water,air,substrate))
     }
+    pub fn insert_air(&mut self,pos: Pos,air:f32){
+        let tile = self.new_tile(pos,0.0,air).unwrap();
+        self.grid.insert(tile);
+    }
     pub fn new_tile_with_substrate(&self,pos:Pos,water: f32, air: f32,substrate:Substrate) -> Result<TileHolder,String>{
         Ok(TileHolder::new_v1(pos,water,air,substrate))
     }
-    
     pub fn new() -> BoringGame {
         let mut grid = Grid::new();
         
         let mut game= BoringGame { grid: grid, ground_level: 30 };
-        let tile = game.new_tile(Pos::new(50,50),0.0,100.0).unwrap();
+        let tile = game.new_tile(Pos::new(20,20),0.0,100.0).unwrap();
         game.grid.insert(tile);
         game
     }

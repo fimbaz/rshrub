@@ -82,12 +82,16 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     }
     pub fn range_query<'t,'r>(&'t self,region: &'r Region) -> RangeQuery<'r,P>{
         let mut bucket_keys = region.iter();
-        
+        RangeQuery{bucket_keys:bucket_keys,grid:self.clone(),region:region,bucket_ref:None,cursor_pos:0}
+                   
+/*
         if let Some(bucket_ref) = self.borrow_map().get(&bucket_keys.next().unwrap()){
             RangeQuery{bucket_keys:bucket_keys,grid:(*self).clone(),region:region,bucket_ref:Some(bucket_ref.clone()),cursor_pos:0}
         }else{
+            println!("we went there");
             RangeQuery{bucket_keys:bucket_keys,grid:self.clone(),region:region,bucket_ref:None,cursor_pos:0}
         }
+*/
     }
     
     pub fn neighbor_query<'r>(& self,query:&'r Region) -> NeighborQuery<P>{
