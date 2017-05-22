@@ -4,7 +4,7 @@ use rect::{BucketPos,Pos,Region,HasPos};
 use std::borrow::Borrow;
 use std::rc::Rc;
 use grid::Grid;
-use std::cell::RefCell;
+use std::cell::{Ref,RefCell};
 use neighborhood::{Neighbor2,Neighborhood2};
 use tile::{Tile,TileHolder,Resources,Substrate};
 pub const UNUSED_VALUE: f32       = 0.0;
@@ -28,7 +28,7 @@ impl BoringGame{
         else {
             Substrate::Space()
         };
-        Ok(TileHolder::new_v1(pos,water,air,substrate))
+        Ok(TileHolder::new_v1(pos,air,water,substrate))
     }
     pub fn insert_air(&mut self,pos: Pos,air:f32){
         let tile = self.new_tile(pos,0.0,air).unwrap();
@@ -45,6 +45,10 @@ impl BoringGame{
         let tile = game.new_tile(Pos::new(20,20),0.0,0.5).unwrap();
         game.grid.insert(tile);
         game
+    }
+    pub fn get(&self,pos: Pos) -> Option<Rc<TileHolder>>{
+        self.grid.get(pos)
+        
     }
     pub fn simulate(&mut self) {
         let region = Region::square(0,0,0); //dummy

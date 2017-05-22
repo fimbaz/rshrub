@@ -84,7 +84,7 @@ impl Label {
             x: 0,
             y: 0,
             t_halign: HorizontalAlign::Left,
-            t_valign: VerticalAlign::Middle,
+            t_valign: VerticalAlign::Top,
             t_margin: (0, 0),
         }
     }
