@@ -2,7 +2,7 @@ use std::hash::{Hash,Hasher};
 
 use std::collections::hash_map;
 
-pub const RECT_BUCKET_SIZE: usize = 4;
+pub const RECT_BUCKET_SIZE: usize = 10;
 impl Eq for Pos {}
 impl Eq for BucketPos {}
 #[derive(Clone,Copy, Debug, PartialEq)]

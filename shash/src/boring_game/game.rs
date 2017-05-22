@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use neighborhood::{Neighbor2,Neighborhood2};
 use tile::{Tile,TileHolder,Resources,Substrate};
 pub const UNUSED_VALUE: f32       = 0.0;
-pub const AIR_SENSITIVITY: f32       = 0.01;
+pub const AIR_SENSITIVITY: f32       = 0.0001;
 pub const STANDARD_AIR_PRESSURE: f32 = 1.0;
 pub const AIR_DAMPING: f32           =  8.0; //AIR_DAMPING must be >= number of neighbors to preserve conservation of mass (untested).
 pub struct BoringGame {

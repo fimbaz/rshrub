@@ -42,6 +42,17 @@ impl <P: HasPos + GridCell + Debug> Grid<P>{
     pub fn borrow_map(&self) -> RefMut<Map<P>>{
         return RefCell::borrow_mut(Rc::borrow(&self.map));
     }
+    pub fn get(&self,pos: Pos) -> Option<Rc<P>>{
+        self.get_bucket(BucketPos(pos.clone())).and_then(|x|{
+            let mut tileholder: Option<Rc<P>>;
+            {
+                let bucket: RefMut<Vec<Rc<P>>> = RefCell::borrow_mut(Rc::borrow(&x));
+                tileholder = bucket.iter().find(|x|x.get_pos() == pos.get_pos()).and_then(|x|Some(x.clone()));
+            }
+            tileholder.clone()
+        })
+        
+    }
     pub fn get_bucket(&self,pos: BucketPos) -> Option<Bucket<P>>{
         return self.borrow_map().get(&pos).map(|x|x.clone());
     }
