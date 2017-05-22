@@ -41,7 +41,7 @@ impl BoringGame{
         let mut grid = Grid::new();
         
         let mut game= BoringGame { grid: grid, ground_level: 30 };
-        let tile = game.new_tile(Pos::new(20,20),0.0,100.0).unwrap();
+        let tile = game.new_tile(Pos::new(20,20),0.0,0.5).unwrap();
         game.grid.insert(tile);
         game
     }
@@ -53,7 +53,6 @@ impl BoringGame{
             let mut enumerated_neighbors = neighborhood.neighbors.iter().enumerate();
             let (i,point_ref)            = enumerated_neighbors.next().unwrap();
             let rc                       = point_ref.as_ref().unwrap().clone();
-            
             let point_ref: &TileHolder = Rc::borrow(&rc);
             let point = point_ref.tile.borrow_mut();
             let mut ppress_air = point.resources.air.0;
@@ -77,10 +76,9 @@ impl BoringGame{
                 }else{
                     neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
-                let dpress = npress_air - ppress_air;
+                let dpress = ppress_air - npress_air;
                 let flow = f32::max(f32::min(dpress, ppress_air/AIR_DAMPING), -npress_air/AIR_DAMPING);
                 if f32::abs(flow) > AIR_SENSITIVITY{
-                    println!("{:?}",flow);
                     npress_air +=flow;
                     ppress_air -=flow;
                 }

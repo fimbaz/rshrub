@@ -37,7 +37,7 @@ fn main(){
                 'J' => {worldview.cursor.y = worldview.cursor.y+5},
                 _ => {}
             }
-//            game.simulate();
+            game.simulate();
             worldview.update_world(&game);
             worldview.draw(&mut term);
             term.swap_buffers().unwrap();
