@@ -52,18 +52,21 @@ impl BoringGame{
         //1 iteration of this loop simulates one active cell
         while let Some(neighborhood) = all_the_neighbors_iter.nexties() {
             let mut enumerated_neighbors = neighborhood.neighbors.iter().enumerate();
-            let (i,point_tileholder)            = enumerated_neighbors.next().unwrap();
-            let point_rc                       = point_tileholder.as_ref().unwrap().clone();
-            let point_ref: &TileHolder = Rc::borrow(&point_rc);
-            let mut point = point_ref.tile.borrow_mut();
-            if  point_ref.turn.get() == self.grid.borrow().turn.get(){
+            enumerated_neighbors.next().unwrap(); //ditch the point
+
+            let point_rc=neighborhood.get_neighbor(Neighbor2::Point).unwrap();
+            let point_tileholder: &TileHolder = Rc::borrow(&point_rc);
+            
+            let mut point = point_tileholder.tile.borrow_mut();
+            if  point_tileholder.turn.get() == self.grid.borrow().turn.get(){
                 //tile was inserted this turn-- please don't simulate it yet.
                 continue;
             }
             let mut ppress_air = point.resources.air.0;
             let mut neighbor_exists = true;
             for (i,maybe_neighbor) in enumerated_neighbors {
-                let neighbor_pos = Neighbor2::from_usize(i).expect("i should always be between 0 and 8").get_pos(&point_ref.pos);
+                let neighbor_pos_1 = Neighbor2::from_usize(i);
+                let neighbor_pos = neighbor_pos_1.as_ref().unwrap().get_pos(&point_tileholder.pos);
                 if neighbor_pos.is_none(){
                     continue;
                 }
@@ -97,7 +100,7 @@ impl BoringGame{
                         ntile.resources.air.1 = Some(npress_air);
                         //get on with it.
                     }else{
-                        let mut tile = self.new_tile(neighbor_pos.expect("nonexistent neighbors have been filtered out."),UNUSED_VALUE,npress_air).unwrap();
+                        let mut tile = self.new_tile(neighbor_pos.unwrap(),UNUSED_VALUE,npress_air).unwrap();
                         tile.turn.set(self.grid.borrow().turn.get());
                         self.grid.insert(tile);
                     }

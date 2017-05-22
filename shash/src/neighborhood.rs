@@ -6,14 +6,14 @@ use std::cell::RefCell;
 #[derive(Debug)]
 pub enum Neighbor2{
     Point = 0,    
-    UpLeft,
-    Up,
-    UpRight,
-    Right,
-    DownRight,
-    Down,
-    DownLeft,
-    Left,
+    UpLeft =1,
+    Up =2,
+    UpRight =3,
+    Right =4,
+    DownRight =5,
+    Down = 6,
+    DownLeft =7,
+    Left = 8,
 
 }
 //Next step: make neighbor a slice.  Sigh...
@@ -49,54 +49,67 @@ impl Neighbor2{
     pub fn get_pos(&self,p: &HasPos) -> Option<Pos>{
         let n2 = self;
         let point = p.get_pos();
-        match n2 {
-            UpLeft => {
-                if point.x != 0 && point.y != 0{
-                    return Some(Pos::new(point.x-1,point.y-1))
-                }
-            }
-            Up => {
+        let result = match n2 {
+            &Neighbor2::Up => {
                 if point.y != 0{
-                    return Some(Pos::new(point.x,point.y-1))
+                    Some(Pos::new(point.x,point.y-1))
+                }else{
+                    None
                 }
-            }
-            UpRight => {
+            },
+            &Neighbor2::UpLeft => {
+                if point.x != 0 && point.y != 0{
+
+                    Some(Pos::new(point.x-1,point.y-1))
+                }else{
+                    None
+                }
+            },
+            &Neighbor2::UpRight => {
                 if point.x != usize::max_value() && point.y != 0{
-                    return Some(Pos::new(point.x+1,point.y-1))
+                    Some(Pos::new(point.x+1,point.y-1))
+                }else{
+                    None
                 }
-            }
-            Right => {
+            },
+            &Neighbor2::Right => {
                 if point.x != usize::max_value(){
-                    return Some(Pos::new(point.x+1,point.y))
+                     Some(Pos::new(point.x+1,point.y))
+                }else{
+                    None
                 }
             }
-            DownRight => {
+            &Neighbor2::DownRight => {
                 if point.x != usize::max_value() && point.y != usize::max_value(){
-                    return Some(Pos::new(point.x+1,point.y+1))
+                     Some(Pos::new(point.x+1,point.y+1))
+                }else{
+                    None
                 }
-            }
-            Down => {
+            },
+            &Neighbor2::Down => {
                 if  point.y != usize::max_value(){
-                    return Some(Pos::new(point.x,point.y+1))
+                     Some(Pos::new(point.x,point.y+1))
+                }else{
+                    None
                 }
-            }
-            DownLeft => {
+            },
+            &Neighbor2::DownLeft => {
                 if point.x != 0 && point.y != usize::max_value(){
-                    return Some(Pos::new(point.x-1,point.y+1))
+                    Some(Pos::new(point.x-1,point.y+1))
+                }else{
+                    None
                 }
-            }
-            Left => {
+            },
+            &Neighbor2::Left => {
                 if point.x != 0{
-                    return Some(Pos::new(point.x-1,point.y))
+                     Some(Pos::new(point.x-1,point.y))
+                }else{
+                    None
                 }
-            }
-            Point => {
-                return Some(Pos::new(point.x,point.y))
-            }
-
-
-        }
-        return None;
+            },
+            &Neighbor2::Point => {Some(Pos::new(point.x,point.y))}
+        };
+        return result;
     }
 }
 #[derive(Debug)]
