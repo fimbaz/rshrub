@@ -32,6 +32,7 @@ impl BoringGame{
     }
     pub fn insert_air(&mut self,pos: Pos,air:f32){
         let tile = self.new_tile(pos,0.0,air).unwrap();
+
         self.grid.insert(tile);
     }
     pub fn new_tile_with_substrate(&self,pos:Pos,water: f32, air: f32,substrate:Substrate) -> Result<TileHolder,String>{
@@ -51,28 +52,35 @@ impl BoringGame{
         //1 iteration of this loop simulates one active cell
         while let Some(neighborhood) = all_the_neighbors_iter.nexties() {
             let mut enumerated_neighbors = neighborhood.neighbors.iter().enumerate();
-            let (i,point_ref)            = enumerated_neighbors.next().unwrap();
-            let rc                       = point_ref.as_ref().unwrap().clone();
-            let point_ref: &TileHolder = Rc::borrow(&rc);
-            let point = point_ref.tile.borrow_mut();
+            let (i,point_tileholder)            = enumerated_neighbors.next().unwrap();
+            let point_rc                       = point_tileholder.as_ref().unwrap().clone();
+            let point_ref: &TileHolder = Rc::borrow(&point_rc);
+            let mut point = point_ref.tile.borrow_mut();
+            if  point_ref.turn.get() == self.grid.borrow().turn.get(){
+                //tile was inserted this turn-- please don't simulate it yet.
+                continue;
+            }
             let mut ppress_air = point.resources.air.0;
             let mut neighbor_exists = true;
-            for (i,maybe_neighbor_ref) in enumerated_neighbors {//maybe_neighbor_ref is actually an Option<TileHolder>, but Tileholder is just a Pos and a RefCell.
+            for (i,maybe_neighbor) in enumerated_neighbors {
                 let neighbor_pos = Neighbor2::from_usize(i).expect("i should always be between 0 and 8").get_pos(&point_ref.pos);
                 if neighbor_pos.is_none(){
                     continue;
                 }
-                let neighbor_ref = maybe_neighbor_ref;
                 let mut npress_air = STANDARD_AIR_PRESSURE;
-                if neighbor_ref.is_some(){ //Some(ref neighbor_ref) = *maybe_neighbor_ref {
-                    let mut tile_holder = neighbor_ref.as_ref().unwrap();
-                    let mut neighbor = tile_holder.tile.borrow_mut();
-                    if neighbor.resources.air.1.is_some(){
-                        neighbor.resources.air.0 = neighbor.resources.air.1.unwrap();
-                        neighbor.resources.air.1 = None;
-                        tile_holder.turn.set(self.grid.turn.get());
+                if let Some(ref neighbor) =  *maybe_neighbor{
+                    if  neighbor.turn.get() == self.grid.borrow().turn.get(){
+                        //tile was inserted this turn-- please don't simulate it yet.
+                        continue;
                     }
-                    npress_air = neighbor.resources.air.0;
+                    let mut ntile = neighbor.tile.borrow_mut();
+                    if ntile.resources.air.1.is_some() {
+                        ntile.resources.air.0 = ntile.resources.air.1.unwrap();
+                        ntile.resources.air.1 = None;
+
+                    }
+                    neighbor.turn.set(self.grid.turn.get());
+                    npress_air = ntile.resources.air.0;
                 }else{
                     neighbor_exists = false;//if the cell gets interesting, we'll have to allocate it.
                 }
@@ -82,21 +90,22 @@ impl BoringGame{
                     npress_air +=flow;
                     ppress_air -=flow;
                 }
+                point.resources.air.1 = Some(ppress_air);
                 if npress_air < (STANDARD_AIR_PRESSURE-AIR_SENSITIVITY) || npress_air > (STANDARD_AIR_PRESSURE+AIR_SENSITIVITY){
-                    if neighbor_ref.is_some(){
-                        let mut neighbor = neighbor_ref.as_ref().unwrap().tile.borrow_mut();
-                        neighbor.resources.air.1 = Some(npress_air);
+                    if let Some(ref neighbor) = *maybe_neighbor{
+                        let mut ntile = neighbor.tile.borrow_mut();
+                        ntile.resources.air.1 = Some(npress_air);
                         //get on with it.
                     }else{
-                        let tile = self.new_tile(neighbor_pos.expect("nonexistent neighbors have been filtered out."),UNUSED_VALUE,npress_air);
-                        self.grid.insert(tile.unwrap());
+                        let mut tile = self.new_tile(neighbor_pos.expect("nonexistent neighbors have been filtered out."),UNUSED_VALUE,npress_air).unwrap();
+                        tile.turn.set(self.grid.borrow().turn.get());
+                        self.grid.insert(tile);
                     }
                 }
                 
             }        
         }
         self.grid.next_turn();
-        
     }
 }
 
