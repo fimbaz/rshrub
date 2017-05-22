@@ -46,11 +46,13 @@ impl Tile{
     }
     pub fn repr(&self)  -> TermCell{
         if self.resources.air.0 > 0.125 {
-            TermCell::with_char('X');
+            return TermCell::with_char('X');
         }else if self.resources.air.0 >= 1.0{
-            TermCell::with_char('O');
+            return TermCell::with_char('O');
+        }else{
+            return TermCell::with_char('p');
         }
-        return TermCell::default();
+//        return TermCell::default();
     }
     pub fn stp_ground_repr() -> TermCell{
         return TermCell::with_char('.');

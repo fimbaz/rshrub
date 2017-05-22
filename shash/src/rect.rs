@@ -120,12 +120,23 @@ impl Region{
         let pos = p.get_pos();
         self.x <= pos.x && self.y <= pos.y && self.x+self.width >= pos.x && self.y + self.height >= pos.y
     }
+    //this doesn't work on big regions!  Let's fix it.
+    //so wazzamatta?  a region only 'contains_bucket' if the bucket is in one of the corners. of the rect.
+    //this worked for neighbor query, but sure doesn't work big random regions!
+    //
+    //why not just use 'contains'?
+    //Does it work if we line the points up with bucket edges?
+
+    //what happens if we /dont/ line up the bucket edges and just use 'contains'?
+    //A: we'll miss the last column bucket and row bucket because we'll b
+    
+    
     pub fn contains_bucket<P: HasPos>(&self,bpos:BucketPos) -> bool {
+        return self.contains(&Pos{x:bpos.0.x,y:bpos.0.y}) || 
         bpos == BucketPos::new(self.x,self.y) ||
             bpos == BucketPos::new(self.x+self.width,self.y) ||
             bpos == BucketPos::new(self.x,self.y+self.height) ||
-            bpos == BucketPos::new(self.x+self.width,self.y+self.height)
-
+            bpos == BucketPos::new(self.x+self.width,self.y+self.height);
             
     }
 
